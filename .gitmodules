@@ -1,0 +1,3 @@
+[submodule "client/baselines"]
+	path = client/baselines
+	url = https://github.com/alexandremuzio/baselines

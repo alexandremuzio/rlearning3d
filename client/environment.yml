@@ -1,0 +1,10 @@
+name: learning-3d
+
+dependencies:
+  - python=3.5
+  - mpi4py
+  - pip:
+    - tensorflow==1.5
+    - grpcio==1.4.0
+    - gym==0.9.4
+    - git+https://github.com/alexandremuzio/baselines

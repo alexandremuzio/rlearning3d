@@ -1,0 +1,6 @@
+{
+  "r" : {
+    "f_penalize_opp_fall" : false,
+    "f_use_kickable" : false
+  }
+}

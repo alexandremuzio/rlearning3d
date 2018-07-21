@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package api;
+
+service DDPGTrainer {
+    rpc SetupEnvironment(SetupEnvRequest) returns (SetupEnvResponse) {}
+    rpc Simulate(SimulationRequest) returns (SimulationResponse) {}
+    rpc StartEpisode(EpisodeRequest) returns (EpisodeResponse) {}
+    rpc CloseEnvironment(CloseRequest) returns (CloseResponse) {}
+}
+
+// Server Messages
+message SetupEnvRequest {
+}
+
+message SetupEnvResponse {
+    int32 num_state_dim = 1;
+    int32 num_action_dim = 2;
+    repeated float action_bound = 3;
+}
+
+message EpisodeRequest {
+}
+
+message EpisodeResponse {
+    State state = 1;
+}
+
+message SimulationRequest {
+    Action action = 1;
+}
+
+message SimulationResponse {
+    State state = 1;
+    float reward = 2;
+    bool done = 3;
+}
+
+message CloseRequest {
+}
+
+message CloseResponse {
+}
+
+// Environment Messages
+message Action {
+    repeated float action=1;
+}
+
+message State {
+    repeated float observation = 1;
+}
