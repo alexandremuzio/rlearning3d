@@ -1,4 +1,4 @@
-# Deep RL Framework
+# Soccer3D Deep RL Framework
 
 There are two components:
 1. The client is the learning algorithms and runs in Python.
