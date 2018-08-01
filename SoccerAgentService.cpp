@@ -1,3 +1,4 @@
+#include <tools/rlearning3d/rl_agents/ZMPKickLearningAgent.h>
 #include "SoccerAgentService.h"
 
 #include "external/easylogging++.h"
@@ -12,7 +13,7 @@ SoccerAgentService::SoccerAgentService(string serverIp, int serverPort, int moni
 
 Status SoccerAgentService::SetupEnvironment(ServerContext *context, const SetupEnvRequest *request,
                                            SetupEnvResponse *response) {
-    agent = std::make_unique<StealBallLearningAgent>(serverIp, serverPort, monitorPort, nbAgents, 0,
+    agent = std::make_unique<ZMPKickLearningAgent>(serverIp, serverPort, monitorPort, nbAgents, 0,
                                                      std::string("ITAndroids"));
     response->CopyFrom(agent->setup());
     return Status::OK;
