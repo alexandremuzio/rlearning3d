@@ -1,15 +1,15 @@
 #ifndef ITANDROIDS_SOCCER3D_CPP_BASELEARNINGAGENT_H
 #define ITANDROIDS_SOCCER3D_CPP_BASELEARNINGAGENT_H
 
-#include "FeatureExtractor.h"
+#include "tools/rlearning3d/utils/FeatureExtractor.h"
 #include "soccer3d.grpc.pb.h"
 
 #include "action/Action.h"
 #include "communication/Communication.h"
 #include "decision_making/DecisionMakingStub.h"
-#include "utils/configure_tree/ParameterTreeCreator.h"
-#include "utils/roboviz/Roboviz.h"
-#include "utils/wizard/Wizard.h"
+#include "core/utils/configure_tree/ParameterTreeCreator.h"
+#include "core/utils/roboviz/Roboviz.h"
+#include "core/utils/wizard/Wizard.h"
 
 using api::Action;
 using api::SetupEnvResponse;

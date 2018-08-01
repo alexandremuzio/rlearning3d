@@ -13,6 +13,8 @@
 
 #include "control/ControlStub.h"
 
+#include "utils/BodyFeaturesUtils.h"
+
 
 using api::Action;
 using api::SetupEnvResponse;

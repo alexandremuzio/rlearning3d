@@ -6,7 +6,7 @@
 #define ITANDROIDS_SOCCER3D_CPP_FEATUREEXTRACTOR_H
 
 #include "math/Pose2D.h"
-#include "utils/wizard/Wizard.h"
+#include "core/utils/wizard/Wizard.h"
 
 using itandroids_lib::math::Pose2D;
 using itandroids_lib::math::Vector3;

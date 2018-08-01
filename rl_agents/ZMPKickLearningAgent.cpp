@@ -4,8 +4,8 @@
 
 #include "ZMPKickLearningAgent.h"
 
-#include "EnvironmentUtils.h"
-#include "LearningConstants.h"
+#include "tools/rlearning3d/utils/EnvironmentUtils.h"
+#include "tools/rlearning3d/utils/LearningConstants.h"
 #include "external/easylogging++.h"
 
 using itandroids_lib::math::sgn;

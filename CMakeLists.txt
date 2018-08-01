@@ -9,6 +9,7 @@ set(RL_AGENTS_DIR rl_agents)
 set(EXTERNAL_DIR external)
 set(CODEGEN_DIR codegen)
 set(CONFIG_DIR config)
+set(UTILS_DIR utils)
 
 # Debugging purposes
 set( CMAKE_VERBOSE_MAKEFILE on )
@@ -22,15 +23,17 @@ include_directories(.)
 #include_directories(${EXTERNAL_DIR})
 include_directories(${RL_AGENTS_DIR})
 include_directories(${CODEGEN_DIR})
+include_directories(${UTILS_DIR})
 
 file(GLOB LEARNING_SRCS "*.cpp" "*.cc")
 file(GLOB RL_SRCS ${RL_AGENTS_DIR}/*.cpp)
+file(GLOB UTILS_SRCS ${UTILS_DIR}/*.cpp)
 file(GLOB EXTERNAL_SRCS ${EXTERNAL_DIR}/*.cc ${EXTERNAL_DIR}/*.cpp)
 file(GLOB CODEGEN_SRCS ${CODEGEN_DIR}/*.cc ${CODEGEN_DIR}/*.cpp)
 
 
 #message(WARNING ${CODEGEN_SRCS})
-add_executable(SoccerAgentServer_Main ${LEARNING_SRCS} ${RL_SRCS} ${EXTERNAL_SRCS} ${CODEGEN_SRCS})
+add_executable(SoccerAgentServer_Main ${LEARNING_SRCS} ${RL_SRCS} ${EXTERNAL_SRCS} ${CODEGEN_SRCS} ${UTILS_SRCS})
 target_link_libraries(SoccerAgentServer_Main itandroids-lib-library test_source core ${GRPC_LINK})
 
 

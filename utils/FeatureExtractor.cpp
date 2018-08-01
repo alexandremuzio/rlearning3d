@@ -1,5 +1,5 @@
 #include "FeatureExtractor.h"
-#include "LearningConstants.h"
+#include "tools/rlearning3d/utils/LearningConstants.h"
 #include "external/easylogging++.h"
 
 FeatureExtractor::FeatureExtractor(utils::wizard::Wizard &wizard, double initialX, double initialY,
