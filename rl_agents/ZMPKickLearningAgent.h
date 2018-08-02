@@ -52,8 +52,6 @@ private:
     //helper methods
     void drawEnvironment();
     void drawStats();
-    double getJointsDiffNorm(const representations::NaoJoints &frame1, const representations::NaoJoints &frame2);
-    void printJoints(representations::NaoJoints &frame);
 
     Json::Value config;
     int iEpi = 0;
@@ -68,9 +66,8 @@ private:
     control::JointsController controller;
     representations::NaoJoints commandedJointsPos;
     representations::NaoJoints initialJointsPos;
-    representations::NaoJoints jointsWeight;
+    BodyFeaturesUtils bodyUtils;
 
-    int referenceDataIt = 0;
 };
 
 

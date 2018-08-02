@@ -9,6 +9,10 @@
 
 #include "soccer3d.grpc.pb.h"
 
+#include<iostream>
+
+#include<fstream>
+
 using api::Action;
 
 class BodyFeaturesUtils {

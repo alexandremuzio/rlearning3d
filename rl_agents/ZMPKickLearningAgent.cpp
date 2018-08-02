@@ -24,30 +24,6 @@ ZMPKickLearningAgent::ZMPKickLearningAgent(std::string host, int serverPort, int
         : BaseLearningAgent(host, serverPort, monitorPort, agentNumber, robotType, teamName),
           controller(0, 180.0 / (M_PI * 7.0)) {
     featEx = make_unique<FeatureExtractor>(wiz, 0.0, 0.0, 0.0);
-
-    jointsWeight.neckPitch = 1;
-    jointsWeight.neckYaw = 1;
-    jointsWeight.leftShoulderPitch = 1;
-    jointsWeight.leftShoulderYaw = 1;
-    jointsWeight.leftArmRoll = 1;
-    jointsWeight.leftArmYaw = 1;
-    jointsWeight.rightShoulderPitch = 1;
-    jointsWeight.rightShoulderYaw = 1;
-    jointsWeight.rightArmRoll = 1;
-    jointsWeight.rightArmYaw = 1;
-    jointsWeight.leftHipYawPitch = 2;
-    jointsWeight.leftHipRoll = 2;
-    jointsWeight.leftHipPitch = 2;
-    jointsWeight.leftKneePitch = 2;
-    jointsWeight.leftFootPitch = 2;
-    jointsWeight.leftFootRoll = 2;
-    jointsWeight.rightHipYawPitch = 3;
-    jointsWeight.rightHipRoll = 3;
-    jointsWeight.rightHipPitch = 3;
-    jointsWeight.rightKneePitch = 3;
-    jointsWeight.rightFootPitch = 3;
-    jointsWeight.rightFootRoll = 3;
-
     //std::ifstream config_doc("config/zmp_kick.json");
     //config_doc >> config;
 }
@@ -80,34 +56,12 @@ SimulationResponse ZMPKickLearningAgent::runStep(Action action) {
     LOG(INFO) << "#######################";
     LOG(INFO) << "Step " << nbEpisodeSteps;
 
-    commandedJointsPos.neckPitch = action.action(0);
-    commandedJointsPos.neckYaw = action.action(1);
-    commandedJointsPos.leftShoulderPitch = action.action(2);
-    commandedJointsPos.leftShoulderYaw = action.action(3);
-    commandedJointsPos.leftArmRoll = action.action(4);
-    commandedJointsPos.leftArmYaw = action.action(5);
-    commandedJointsPos.rightShoulderPitch = action.action(6);
-    commandedJointsPos.rightShoulderYaw = action.action(7);
-    commandedJointsPos.rightArmRoll = action.action(8);
-    commandedJointsPos.rightArmYaw = action.action(9);
-    commandedJointsPos.leftHipYawPitch = action.action(10);
-    commandedJointsPos.leftHipRoll = action.action(11);
-    commandedJointsPos.leftHipPitch = action.action(12);
-    commandedJointsPos.leftKneePitch = action.action(13);
-    commandedJointsPos.leftFootPitch = action.action(14);
-    commandedJointsPos.leftFootRoll = action.action(15);
-    commandedJointsPos.rightHipYawPitch = action.action(16);
-    commandedJointsPos.rightHipRoll = action.action(17);
-    commandedJointsPos.rightHipPitch = action.action(18);
-    commandedJointsPos.rightKneePitch = action.action(19);
-    commandedJointsPos.rightFootPitch = action.action(20);
-    commandedJointsPos.rightFootRoll = action.action(21);
+    commandedJointsPos = bodyUtils.readAction(action);
 
     if(iEpi % 1000 == 0){
         LOG(INFO) << "commanded joints positions: ";
-        printJoints(commandedJointsPos);
+        bodyUtils.printJoints(commandedJointsPos);
     }
-
 
     // make 1 simulation step
     controller.update(commandedJointsPos, perception.getAgentPerception().getNaoJoints());
@@ -173,36 +127,13 @@ double ZMPKickLearningAgent::reward() {
     if(selfPos.z < 0.2)
         reward -= 1000;
 
-    representations::NaoJoints referenceFrame;
-    learningFile >> referenceFrame.neckPitch;
-    learningFile >> referenceFrame.neckYaw;
+    representations::NaoJoints referenceFrame = bodyUtils.readJointsFromFile(learningFile);
 
-    learningFile >> referenceFrame.leftShoulderPitch;
-    learningFile >> referenceFrame.leftShoulderYaw;
-    learningFile >> referenceFrame.leftArmRoll;
-    learningFile >> referenceFrame.leftArmYaw;
+    double jointsDiffNorm = bodyUtils.getJointsDiffNorm(commandedJointsPos, referenceFrame);
 
-    learningFile >> referenceFrame.rightShoulderPitch;
-    learningFile >> referenceFrame.rightShoulderYaw;
-    learningFile >> referenceFrame.rightArmRoll;
-    learningFile >> referenceFrame.rightArmYaw;
+    reward += -jointsDiffNorm;
 
-    learningFile >> referenceFrame.leftHipYawPitch;
-    learningFile >> referenceFrame.leftHipRoll;
-    learningFile >> referenceFrame.leftHipPitch;
-    learningFile >> referenceFrame.leftKneePitch;
-    learningFile >> referenceFrame.leftFootPitch;
-    learningFile >> referenceFrame.leftFootRoll;
-
-    learningFile >> referenceFrame.rightHipYawPitch;
-    learningFile >> referenceFrame.rightHipRoll;
-    learningFile >> referenceFrame.rightHipPitch;
-    learningFile >> referenceFrame.rightKneePitch;
-    learningFile >> referenceFrame.rightFootPitch;
-    learningFile >> referenceFrame.rightFootRoll;
-
-    reward += -getJointsDiffNorm(commandedJointsPos, referenceFrame);
-    episodeAvgReward += -getJointsDiffNorm(commandedJointsPos, referenceFrame);
+    episodeAvgReward += -jointsDiffNorm;
 
     LOG(INFO) << "current reward: " << reward;
     
@@ -237,65 +168,3 @@ void ZMPKickLearningAgent::drawEnvironment() {
 void ZMPKickLearningAgent::drawStats() {
 
 }
-
-double ZMPKickLearningAgent::getJointsDiffNorm(const representations::NaoJoints &frame1, const representations::NaoJoints &frame2) {
-    using namespace itandroids_lib::math;
-
-    double norm = 0;
-    representations::NaoJoints frameDiff = frame1 - frame2;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.neckPitch)) * jointsWeight.neckPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.neckYaw)) * jointsWeight.neckYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftShoulderPitch)) * jointsWeight.leftShoulderPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftShoulderYaw)) * jointsWeight.leftShoulderYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftArmRoll)) * jointsWeight.leftArmRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftArmYaw)) * jointsWeight.leftArmYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightShoulderPitch)) * jointsWeight.rightShoulderPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightShoulderYaw)) * jointsWeight.rightShoulderYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightArmRoll)) * jointsWeight.rightArmRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightArmYaw)) * jointsWeight.rightArmYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipYawPitch)) * jointsWeight.leftHipYawPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipRoll)) * jointsWeight.leftHipRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipPitch)) * jointsWeight.leftHipPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftKneePitch)) * jointsWeight.leftKneePitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftFootPitch)) * jointsWeight.leftFootPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftFootRoll)) * jointsWeight.leftFootRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipYawPitch)) * jointsWeight.rightHipYawPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipRoll)) * jointsWeight.rightHipRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipPitch)) * jointsWeight.rightHipPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightKneePitch)) * jointsWeight.rightKneePitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightFootPitch)) * jointsWeight.rightFootPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightFootRoll)) * jointsWeight.rightFootRoll;
-
-    return norm;
-}
-
-void ZMPKickLearningAgent::printJoints(representations::NaoJoints &frame) {
-    LOG(INFO) << frame.neckPitch << " ";
-    LOG(INFO) << frame.neckYaw << " ";
-
-    LOG(INFO) << frame.leftShoulderPitch << " ";
-    LOG(INFO) << frame.leftShoulderYaw << " ";
-    LOG(INFO) << frame.leftArmRoll << " ";
-    LOG(INFO) << frame.leftArmYaw << " ";
-
-    LOG(INFO) << frame.rightShoulderPitch << " ";
-    LOG(INFO) << frame.rightShoulderYaw << " ";
-    LOG(INFO) << frame.rightArmRoll << " ";
-    LOG(INFO) << frame.rightArmYaw << " ";
-
-    LOG(INFO) << frame.leftHipYawPitch << " ";
-    LOG(INFO) << frame.leftHipRoll << " ";
-    LOG(INFO) << frame.leftHipPitch << " ";
-    LOG(INFO) << frame.leftKneePitch << " ";
-    LOG(INFO) << frame.leftFootPitch << " ";
-    LOG(INFO) << frame.leftFootRoll << " ";
-
-    LOG(INFO) << frame.rightHipYawPitch << " ";
-    LOG(INFO) << frame.rightHipRoll << " ";
-    LOG(INFO) << frame.rightHipPitch << " ";
-    LOG(INFO) << frame.rightKneePitch << " ";
-    LOG(INFO) << frame.rightFootPitch << " ";
-    LOG(INFO) << frame.rightFootRoll << std::endl;
-}
-
-
