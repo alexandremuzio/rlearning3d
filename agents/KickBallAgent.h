@@ -45,6 +45,8 @@ private:
     representations::NaoJoints jointsTargets;
 
     std::ofstream anglesFile;
+    // Runs simulation step in the environment
+    void step();
 };
 
 

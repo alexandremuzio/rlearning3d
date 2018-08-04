@@ -16,7 +16,7 @@ KickBallAgent::KickBallAgent(std::string host, int agentPort, int monitorPort,
                                                                          false,
                                                                          control::walking::RobotPhysicalParameters::getNaoPhysicalParameters(),
                                                                          &inverseKinematics) {
-    anglesFile.open("/home/luis/TG/itandroids-soccer3d/source/tools/learning/rl_agents/angles.txt");
+    anglesFile.open("/home/luis/TG/itandroids-soccer3d/source/tools/rlearning3d/rl_agents/angles.txt");
     communication.establishConnection();
     wizCommunication.establishConnection();
     action.create(0);
@@ -60,17 +60,17 @@ void KickBallAgent::runStep() {
 void KickBallAgent::testLoop(int numberOfSteps) {
     accumulatedTime = 0;
     wiz.setPlayMode(representations::RawPlayMode::PLAY_ON);
+    // print initial state
+    printJoints(accumulatedTime, perception.getAgentPerception().getNaoJoints());
     for (int currentStep = 0; currentStep < numberOfSteps; currentStep++) {
-        communication.receiveMessage();
-        perception.perceive(communication);
-        modeling.model(perception, controlStub);
-        printJoints(accumulatedTime, perception.getAgentPerception().getNaoJoints());
-        //step
+        // update control data
         runStep();
-
-        action.act(decisionMaking, controlStub);
-        communication.sendMessage(action.getServerMessage());
+        // run all simulation cycle
+        step();
+        // reach next state
         accumulatedTime += STEP_DT;
+        // print final frame
+        printJoints(accumulatedTime, perception.getAgentPerception().getNaoJoints());
     }
 }
 
@@ -102,6 +102,13 @@ void KickBallAgent::printJoints(double time, representations::NaoJoints curJoint
     anglesFile << curJointsPos.rightKneePitch << " ";
     anglesFile << curJointsPos.rightFootPitch << " ";
     anglesFile << curJointsPos.rightFootRoll << std::endl;
+}
+
+void KickBallAgent::step() {
+    action.act(decisionMaking, controlStub);
+    communication.sendMessage(action.getServerMessage());
+    communication.receiveMessage();
+    perception.perceive(communication);
 }
 
 int main() {

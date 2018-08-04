@@ -67,6 +67,8 @@ private:
     representations::NaoJoints commandedJointsPos;
     representations::NaoJoints initialJointsPos;
     BodyFeaturesUtils bodyUtils;
+    modeling::BodyModel selfBodyModel;
+    modeling::BodyModel referenceBodyModel;
 
 };
 

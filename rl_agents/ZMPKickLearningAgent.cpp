@@ -13,6 +13,9 @@ using itandroids_lib::math::sgn;
 // Constants
 // Robot
 const double MAX_ANGLE_JOINTS = M_PI;
+const double JOINTS_POSITIONS_WEIGHT = 0.65;
+const double CENTER_OF_MASS_WEIGHT = 0.2;
+const double END_EFFECTOR_WEIGHT = 0.15;
 
 // RL
 const int NUMBER_OF_STATE_DIM = 1;
@@ -56,12 +59,8 @@ SimulationResponse ZMPKickLearningAgent::runStep(Action action) {
     LOG(INFO) << "#######################";
     LOG(INFO) << "Step " << nbEpisodeSteps;
 
+    // read commanded joints positions
     commandedJointsPos = bodyUtils.readAction(action);
-
-    if(iEpi % 1000 == 0){
-        LOG(INFO) << "commanded joints positions: ";
-        bodyUtils.printJoints(commandedJointsPos);
-    }
 
     // make 1 simulation step
     controller.update(commandedJointsPos, perception.getAgentPerception().getNaoJoints());
@@ -120,23 +119,42 @@ bool ZMPKickLearningAgent::episodeOver() {
 double ZMPKickLearningAgent::reward() {
     double reward = 0;
 
-    // reward the time standing without fall
-    reward += 20;
-
-    Vector3<double> selfPos = wiz.getAgentTranslation(agentNumber);
-    if(selfPos.z < 0.2)
-        reward -= 1000;
-
+    // read reference frame from file
     representations::NaoJoints referenceFrame = bodyUtils.readJointsFromFile(learningFile);
+    // get actual frame
+    representations::NaoJoints actualFrame = perception.getAgentPerception().getNaoJoints();
 
-    double jointsDiffNorm = bodyUtils.getJointsDiffNorm(commandedJointsPos, referenceFrame);
+    // get joints difference norm
+    double jointsDiffNorm = bodyUtils.getJointsDiffNorm(actualFrame, referenceFrame);
 
-    reward += -jointsDiffNorm;
+    // add joints position diff factor in reward
+    reward += JOINTS_POSITIONS_WEIGHT * exp(- 2 * jointsDiffNorm);
 
-    episodeAvgReward += -jointsDiffNorm;
+    // update body models
+    selfBodyModel.update(actualFrame);
+    referenceBodyModel.update(referenceFrame);
+    // get center of mass in the support foot referential
+    Pose3D selfFactorTransform = selfBodyModel.getLeftLegEndEffectorTransform();
+    Pose3D referenceFactorTransform = referenceBodyModel.getLeftLegEndEffectorTransform();
+    Vector3<double> selfCenterOfMass = selfFactorTransform.invert() * selfBodyModel.computeCenterOfMass();
+    Vector3<double> refCenterOfMass = referenceFactorTransform.invert() * referenceBodyModel.computeCenterOfMass();
+    // get center of mass difference
+    Vector3<double> CMdiff = selfCenterOfMass - refCenterOfMass;
+
+    // add CM diff factor in reward
+    reward += CENTER_OF_MASS_WEIGHT * exp(-10 * CMdiff.squareAbs());
+
+    // now the end effector contribution
+    Vector3<double> selfEndEffector = selfBodyModel.getRightLegEndEffectorTransform().translation;
+    Vector3<double> refEndEffector = referenceBodyModel.getRightLegEndEffectorTransform().translation;
+    Vector3<double> endEffectorDiff = selfEndEffector - refEndEffector;
+    // add End Effector in reward
+    reward += END_EFFECTOR_WEIGHT * exp(-40 * endEffectorDiff.squareAbs());
 
     LOG(INFO) << "current reward: " << reward;
-    
+
+    episodeAvgReward += reward;
+
     return reward;
 }
 
@@ -155,8 +173,6 @@ State ZMPKickLearningAgent::state() {
 void ZMPKickLearningAgent::step() {
     action.act(decisionMaking, controlStub);
     communication.sendMessage(action.getServerMessage());
-    communication.receiveMessage();
-    perception.perceive(communication);
     communication.receiveMessage();
     perception.perceive(communication);
 }
