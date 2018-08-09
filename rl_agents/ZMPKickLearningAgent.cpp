@@ -98,15 +98,14 @@ SetupEnvResponse ZMPKickLearningAgent::setup() {
 }
 
 bool ZMPKickLearningAgent::episodeOver() {
-    Vector3<double> selfPos = wiz.getAgentTranslation(agentNumber);
-    if(selfPos.z < 0.2) {
+    //Vector3<double> selfPos = wiz.getAgentTranslation(agentNumber);
+    if(modeling.getAgentModel().hasFallen()) {
         learningFile.close();
         LOG(INFO) << "Episode finishing because agent fell";
         LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps;
         LOG(INFO) << "Steps Until Fall: " << nbEpisodeSteps;
         return true;
     }
-
     if(learningFile.eof()){
         learningFile.close();
         LOG(INFO) << "Episode finishing because reached end of file";
@@ -175,6 +174,7 @@ void ZMPKickLearningAgent::step() {
     communication.sendMessage(action.getServerMessage());
     communication.receiveMessage();
     perception.perceive(communication);
+    modeling.model(perception, controlStub);
 }
 
 void ZMPKickLearningAgent::drawEnvironment() {
