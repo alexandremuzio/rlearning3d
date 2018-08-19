@@ -48,6 +48,7 @@ private:
 
     // Runs simulation step in the environment
     void step();
+    void fullStep();
 
     //helper methods
     void drawEnvironment();

@@ -27,6 +27,8 @@ public:
 
     void printJoints(representations::NaoJoints &frame);
 
+    bool initialPosSanityCheck(const representations::NaoJoints &frame);
+
     double getJointsDiffNorm(representations::NaoJoints &frame1, representations::NaoJoints &frame2);
 
 private:

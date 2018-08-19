@@ -109,6 +109,7 @@ void KickBallAgent::step() {
     communication.sendMessage(action.getServerMessage());
     communication.receiveMessage();
     perception.perceive(communication);
+    modeling.model(perception, controlStub);
 }
 
 int main() {

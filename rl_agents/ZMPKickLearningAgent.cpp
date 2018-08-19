@@ -7,6 +7,7 @@
 #include "tools/rlearning3d/utils/EnvironmentUtils.h"
 #include "tools/rlearning3d/utils/LearningConstants.h"
 #include "external/easylogging++.h"
+#include "string.h"
 
 using itandroids_lib::math::sgn;
 
@@ -37,34 +38,43 @@ State ZMPKickLearningAgent::newEpisode() {
     nbEpisodeSteps = 0;
     episodeAvgReward = 0;
     learningFile.open("angles.txt"); // open file
+
     // set initial position in the field
+    wiz.setGameTime(0);
     wiz.setPlayMode(representations::RawPlayMode::PLAY_ON);
     wiz.setBallPosition(Vector3<double>(2,2,0));
     wiz.setAgentPositionAndDirection(agentNumber, representations::PlaySide::LEFT,
-                                     Vector3<double>(0, 0, 0.3), 0);
-    // set initial joints pos
-    for(int i = 0; i < 30; i++) {
-        controller.update(initialJointsPos, perception.getAgentPerception().getNaoJoints());
-        controlStub.naoJoints = controller.getCommands();
-        step();
-        if(i % 5 != 0)
-            wiz.setAgentPositionAndDirection(agentNumber, representations::PlaySide::LEFT,
-                                             Vector3<double>(0, 0, 0.3), 0);
-    }
+                                     Vector3<double>(0.0, 0.0, 0.35), 0);
 
+    // set initial joints pos
+    decisionMaking.movementRequest == nullptr;
+    for(int i = 0; i < 20; i++)
+        fullStep();
+
+    // print episode number
+    string episodeString = "new episode " + to_string(iEpi);
+    string epiString = "stats.epi";
+    roboviz->drawAnnotation(&episodeString, 0, 0.3, 0.0, 0.0, 0.0, 1.0, &epiString);
+    std::string buffer(epiString);
+    roboviz->swapBuffers(&buffer);
+
+    // check initial positions
+    while(!bodyUtils.initialPosSanityCheck(perception.getAgentPerception().getNaoJoints())){
+        for(int i = 0; i < 50; i++)
+            fullStep();
+    }
+    wiz.setAgentPositionAndDirection(agentNumber, representations::PlaySide::LEFT,
+                                     Vector3<double>(0.0, 0.0, 0.35), 0);
     return state();
 }
 
 SimulationResponse ZMPKickLearningAgent::runStep(Action action) {
-    LOG(INFO) << "#######################";
-    LOG(INFO) << "Step " << nbEpisodeSteps;
+//    LOG(INFO) << "#######################";
+//    LOG(INFO) << "Step " << nbEpisodeSteps;
 
     // read commanded joints positions
     commandedJointsPos = bodyUtils.readAction(action);
-
     // make 1 simulation step
-    controller.update(commandedJointsPos, perception.getAgentPerception().getNaoJoints());
-    controlStub.naoJoints = controller.getCommands();
     step();
 
     // compute reward
@@ -98,18 +108,24 @@ SetupEnvResponse ZMPKickLearningAgent::setup() {
 }
 
 bool ZMPKickLearningAgent::episodeOver() {
-    //Vector3<double> selfPos = wiz.getAgentTranslation(agentNumber);
-    if(modeling.getAgentModel().hasFallen()) {
+    Vector3<double> selfPos = wiz.getAgentTranslation(agentNumber);
+    if(modeling.getAgentModel().hasFallen() /*selfPos.z < 0.27*/ ) {
         learningFile.close();
         LOG(INFO) << "Episode finishing because agent fell";
         LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps;
         LOG(INFO) << "Steps Until Fall: " << nbEpisodeSteps;
+        decisionMaking.movementRequest = nullptr;
+        for (int i = 0; i < 80; i++ )
+            fullStep();
         return true;
     }
     if(learningFile.eof()){
         learningFile.close();
         LOG(INFO) << "Episode finishing because reached end of file";
         LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps;
+        decisionMaking.movementRequest = nullptr;
+        for (int i = 0; i < 80; i++ )
+            fullStep();
         return true;
     }
     return false;
@@ -150,7 +166,7 @@ double ZMPKickLearningAgent::reward() {
     // add End Effector in reward
     reward += END_EFFECTOR_WEIGHT * exp(-40 * endEffectorDiff.squareAbs());
 
-    LOG(INFO) << "current reward: " << reward;
+//    LOG(INFO) << "current reward: " << reward;
 
     episodeAvgReward += reward;
 
@@ -165,16 +181,29 @@ State ZMPKickLearningAgent::state() {
     learningFile >> timeStep;
     currState = timeStep.empty() ? currState + 0.02 : std::stod(timeStep);
     st.add_observation(currState);
-    LOG(INFO) << "next state: " << st.observation(0);
+//    LOG(INFO) << "next state: " << st.observation(0);
     return st;
 }
 
 void ZMPKickLearningAgent::step() {
+    // setup control
+    controller.update(commandedJointsPos, perception.getAgentPerception().getNaoJoints());
+    controlStub.naoJoints = controller.getCommands();
+    // remaining part of cycle
     action.act(decisionMaking, controlStub);
     communication.sendMessage(action.getServerMessage());
     communication.receiveMessage();
     perception.perceive(communication);
     modeling.model(perception, controlStub);
+}
+
+void ZMPKickLearningAgent::fullStep() {
+    control.control(perception, modeling, decisionMaking);
+    action.act(decisionMaking, control);
+    communication.sendMessage(action.getServerMessage());
+    communication.receiveMessage();
+    perception.perceive(communication);
+    modeling.model(perception, control);
 }
 
 void ZMPKickLearningAgent::drawEnvironment() {
