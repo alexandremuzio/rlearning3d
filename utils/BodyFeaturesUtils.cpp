@@ -157,3 +157,30 @@ double BodyFeaturesUtils::getJointsDiffNorm(representations::NaoJoints &frame1, 
 
     return norm;
 }
+
+bool BodyFeaturesUtils::initialPosSanityCheck(const representations::NaoJoints &frame) {
+    if( (frame.neckPitch > 0.001)
+        || (frame.neckYaw > 0.001)
+        || (frame.leftShoulderPitch > 0.001)
+        || (frame.leftShoulderYaw > 0.001)
+        || (frame.leftArmRoll > 0.001)
+        || (frame.leftArmYaw > 0.001)
+        || (frame.rightShoulderPitch > 0.001)
+        || (frame.rightShoulderYaw > 0.001)
+        || (frame.rightArmRoll > 0.001)
+        || (frame.rightArmYaw > 0.001)
+        || (frame.leftHipYawPitch > 0.001)
+        || (frame.leftHipRoll > 0.001)
+        || (frame.leftHipPitch > 0.001)
+        || (frame.leftKneePitch > 0.001)
+        || (frame.leftFootPitch > 0.001)
+        || (frame.leftFootRoll > 0.001)
+        || (frame.rightHipYawPitch > 0.001)
+        || (frame.rightHipRoll > 0.001)
+        || (frame.rightHipPitch > 0.001)
+        || (frame.rightKneePitch > 0.001)
+        || (frame.rightFootPitch > 0.001)
+        || (frame.rightFootRoll > 0.001) )
+        return false;
+    return true;
+}
