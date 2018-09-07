@@ -13,8 +13,16 @@ set(UTILS_DIR utils)
 
 # Debugging purposes
 set( CMAKE_VERBOSE_MAKEFILE on )
+set(GRPC_LINK -lprotobuf -lgrpc++ -lgrpc -lz)
 
-set(GRPC_LINK  -lprotobuf -lgrpc++ -lgrpc)
+set(CMAKE_EXE_LINKER_FLAGS -static)
+set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)       # remove -Wl,-Bdynamic
+set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
+set(CMAKE_SHARED_LIBRARY_C_FLAGS)         # remove -fPIC
+set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)    # remove -rdynamic
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
 
 find_package(Protobuf REQUIRED)
 
@@ -34,7 +42,7 @@ file(GLOB CODEGEN_SRCS ${CODEGEN_DIR}/*.cc ${CODEGEN_DIR}/*.cpp)
 
 #message(WARNING ${CODEGEN_SRCS})
 add_executable(SoccerAgentServer_Main ${LEARNING_SRCS} ${RL_SRCS} ${EXTERNAL_SRCS} ${CODEGEN_SRCS} ${UTILS_SRCS})
-target_link_libraries(SoccerAgentServer_Main itandroids-lib-library test_source core ${GRPC_LINK})
+target_link_libraries(SoccerAgentServer_Main itandroids-lib-library test_source core ${GRPC_LINK}  "-static")
 
 
 # Add .txts files to binaries/

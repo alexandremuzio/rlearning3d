@@ -31,8 +31,12 @@ public:
 
     double getJointsDiffNorm(representations::NaoJoints &frame1, representations::NaoJoints &frame2);
 
+    void printJoints(representations::NaoJoints &frame1, representations::NaoJoints &fram2);
+
 private:
     representations::NaoJoints jointsWeight;
+    std::vector<std::string> jointsToPrint;
+    std::vector<std::ofstream> filesToPrint;
 };
 
 

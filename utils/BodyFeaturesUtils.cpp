@@ -5,8 +5,15 @@
 #include <tools/rlearning3d/external/easylogging++.h>
 #include "BodyFeaturesUtils.h"
 #include "math/MathUtils.h"
+#include "string.h"
 
 BodyFeaturesUtils::BodyFeaturesUtils() {
+    jointsToPrint = {"rightFootRoll","rightFootPitch","rightKneePitch","rightHipPitch","rightHipRoll","rightHipYawPitch"};
+    filesToPrint.resize(jointsToPrint.size());
+    std::string prefix = "../../plots/";
+    for(int i = 0; i < jointsToPrint.size(); i++)
+        filesToPrint[i].open(prefix+jointsToPrint[i]+".txt");
+
     jointsWeight.neckPitch = 1;
     jointsWeight.neckYaw = 1;
     jointsWeight.leftShoulderPitch = 1;
@@ -32,7 +39,8 @@ BodyFeaturesUtils::BodyFeaturesUtils() {
 }
 
 BodyFeaturesUtils::~BodyFeaturesUtils() {
-
+    for(int i = 0; i < filesToPrint.size(); i++)
+        filesToPrint[i].close();
 }
 
 representations::NaoJoints BodyFeaturesUtils::readJointsFromFile(std::ifstream &anglesFile){
@@ -183,4 +191,24 @@ bool BodyFeaturesUtils::initialPosSanityCheck(const representations::NaoJoints &
         || (frame.rightFootRoll > 0.001) )
         return false;
     return true;
+}
+
+std::unordered_map<std::string,double> createJointsMap(representations::NaoJoints &frame) {
+    std::unordered_map<std::string,double> frameMap;
+    frameMap["rightFootRoll"] = frame.rightFootRoll;
+    frameMap["rightFootPitch"] = frame.rightFootPitch;
+    frameMap["rightKneePitch"] = frame.rightKneePitch;
+    frameMap["rightHipPitch"] = frame.rightHipPitch;
+    frameMap["rightHipRoll"] = frame.rightHipRoll;
+    frameMap["rightHipYawPitch"] = frame.rightHipYawPitch;
+    return frameMap;
+}
+
+void BodyFeaturesUtils::printJoints(representations::NaoJoints &frame1, representations::NaoJoints &frame2) {
+    auto frameMap1 = createJointsMap(frame1);
+    auto frameMap2 = createJointsMap(frame2);
+    for(int i = 0; i < jointsToPrint.size(); i++) {
+        filesToPrint[i] << frameMap1[jointsToPrint[i]] << " " << frameMap2[jointsToPrint[i]] << std::endl;
+    }
+
 }
