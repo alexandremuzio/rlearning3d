@@ -212,3 +212,15 @@ void BodyFeaturesUtils::printJoints(representations::NaoJoints &frame1, represen
     }
 
 }
+
+std::vector<representations::NaoJoints> BodyFeaturesUtils::preProcessFile(std::ifstream &anglesFile) {
+    std::vector<representations::NaoJoints> allFrames;
+    while(!anglesFile.eof()){
+        double curState;
+        anglesFile >> curState;
+        allFrames.push_back(readJointsFromFile(anglesFile));
+    }
+    anglesFile.close();
+    allFrames.pop_back();
+    return allFrames;
+}

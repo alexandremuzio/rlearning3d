@@ -24,6 +24,9 @@ const int NUMBER_OF_STEPS_PER_EPISODE = 5000 * LearningConstants::NUM_STEP_SAME_
 
 MimicLearningAgent::MimicLearningAgent(string host, int serverPort, int monitorPort, int agentNumber, int robotType,
                                        string teamName) {
+    learningFile.open("angles.txt"); // open file
+    rewardFile.open("../../plots/rewards.txt");
+    referenceMovement = bodyUtils.preProcessFile(learningFile);
 }
 
 State MimicLearningAgent::newEpisode() {
@@ -31,8 +34,7 @@ State MimicLearningAgent::newEpisode() {
     LOG(INFO) << "Starting Episode: " << ++iEpi;
     nbEpisodeSteps = 0;
     episodeAvgReward = 0;
-    learningFile.open("angles.txt"); // open file
-
+    iterator = 0;
     return state();
 }
 
@@ -41,8 +43,9 @@ SimulationResponse MimicLearningAgent::runStep(Action action) {
 //    LOG(INFO) << "Step " << nbEpisodeSteps;
     // read commanded joints positions
     commandedJointsPos = bodyUtils.readAction(action);
+    //bodyUtils.printJoints(referenceMovement[iterator]);
     currReward = reward();
-
+    //LOG(INFO) << "end up in state " << iterator << " " << state().observation(0);
     // update steps count
     nbEpisodeSteps++;
     nbTotalSteps++;
@@ -71,10 +74,10 @@ SetupEnvResponse MimicLearningAgent::setup() {
 }
 
 bool MimicLearningAgent::episodeOver() {
-    if(learningFile.eof()){
-        learningFile.close();
+    if(iterator >= referenceMovement.size()){
         LOG(INFO) << "Episode finishing because reached end of file";
         LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps;
+        rewardFile << episodeAvgReward / nbEpisodeSteps;
         return true;
     }
     return false;
@@ -82,24 +85,19 @@ bool MimicLearningAgent::episodeOver() {
 
 double MimicLearningAgent::reward() {
     // read reference frame from file
-    representations::NaoJoints referenceFrame = bodyUtils.readJointsFromFile(learningFile);
     if(iEpi % 10 == 0)
-        bodyUtils.printJoints(referenceFrame, commandedJointsPos);
+        bodyUtils.printJoints(referenceMovement[iterator], commandedJointsPos);
     // get joints commands difference norm
-    double jointsDiffNorm = bodyUtils.getJointsDiffNorm(commandedJointsPos, referenceFrame);
+    double jointsDiffNorm = bodyUtils.getJointsDiffNorm(commandedJointsPos, referenceMovement[iterator++]);
     double reward = -jointsDiffNorm;
     episodeAvgReward += reward;
-    return  reward;
+    return reward;
 }
 
 State MimicLearningAgent::state() {
     // return next timestep
     State st;
-    // read next time step from file
-    string timeStep;
-    learningFile >> timeStep;
-    currState = timeStep.empty() ? currState + 0.02 : std::stod(timeStep);
-    st.add_observation(currState);
+    st.add_observation(iterator * 0.02);
 //    LOG(INFO) << "next state: " << st.observation(0);
     return st;
 }

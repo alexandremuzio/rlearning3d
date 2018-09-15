@@ -52,6 +52,9 @@ private:
     representations::NaoJoints commandedJointsPos;
     representations::NaoJoints initialJointsPos;
     BodyFeaturesUtils bodyUtils;
+    std::vector<representations::NaoJoints> referenceMovement;
+    int iterator;
+    std::ofstream rewardFile;
 };
 
 
