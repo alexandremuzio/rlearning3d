@@ -8,12 +8,12 @@
 #include "string.h"
 
 BodyFeaturesUtils::BodyFeaturesUtils() {
+    LOG(INFO) << "creating body utils" << std::flush;
     jointsToPrint = {"rightFootRoll","rightFootPitch","rightKneePitch","rightHipPitch","rightHipRoll","rightHipYawPitch"};
     filesToPrint.resize(jointsToPrint.size());
     std::string prefix = "../../plots/";
     for(int i = 0; i < jointsToPrint.size(); i++)
         filesToPrint[i].open(prefix+jointsToPrint[i]+".txt");
-
     jointsWeight.neckPitch = 1;
     jointsWeight.neckYaw = 1;
     jointsWeight.leftShoulderPitch = 1;
@@ -36,6 +36,7 @@ BodyFeaturesUtils::BodyFeaturesUtils() {
     jointsWeight.rightKneePitch = 3;
     jointsWeight.rightFootPitch = 3;
     jointsWeight.rightFootRoll = 3;
+    LOG(INFO) << "created body utils" << std::flush;
 }
 
 BodyFeaturesUtils::~BodyFeaturesUtils() {
@@ -79,6 +80,8 @@ representations::NaoJoints BodyFeaturesUtils::readJointsFromFile(std::ifstream &
 representations::NaoJoints BodyFeaturesUtils::readAction(Action action){
     representations::NaoJoints actionFrame;
 
+    actionFrame.rightKneePitch = action.action(0);
+    return actionFrame;
     actionFrame.neckPitch = action.action(0);
     actionFrame.neckYaw = action.action(1);
     actionFrame.leftShoulderPitch = action.action(2);
@@ -140,6 +143,8 @@ double BodyFeaturesUtils::getJointsDiffNorm(representations::NaoJoints &frame1, 
     double norm = 0;
     representations::NaoJoints frameDiff = frame1 - frame2;
 
+    norm += (frame1.rightKneePitch - frame2.rightKneePitch) * (frame1.rightKneePitch - frame2.rightKneePitch);
+    return norm;
     norm += fabs(MathUtils::normalizeAngle(frameDiff.neckPitch)) * jointsWeight.neckPitch;
     norm += fabs(MathUtils::normalizeAngle(frameDiff.neckYaw)) * jointsWeight.neckYaw;
     norm += fabs(MathUtils::normalizeAngle(frameDiff.leftShoulderPitch)) * jointsWeight.leftShoulderPitch;
@@ -209,6 +214,7 @@ void BodyFeaturesUtils::printJoints(representations::NaoJoints &frame1, represen
     auto frameMap2 = createJointsMap(frame2);
     for(int i = 0; i < jointsToPrint.size(); i++) {
         filesToPrint[i] << frameMap1[jointsToPrint[i]] << " " << frameMap2[jointsToPrint[i]] << std::endl;
+        filesToPrint[i].flush();
     }
 
 }

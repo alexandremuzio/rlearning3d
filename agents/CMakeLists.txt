@@ -10,6 +10,9 @@ file(GLOB SRCS *.cpp)
 foreach (file_path ${SRCS})
     get_filename_component(dir_path ${file_path} PATH)
     get_filename_component(file_name_we ${file_path} NAME_WE)
+    if(CMAKE_BUILD_TYPE MATCHES Release)
+        add_definitions(-DDEBUG=1)
+    endif()
 
     set(TARGET_NAME ${file_name_we}_learning)
 

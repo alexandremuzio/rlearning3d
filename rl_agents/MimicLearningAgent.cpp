@@ -19,7 +19,7 @@ const double END_EFFECTOR_WEIGHT = 0.15;
 
 // RL
 const int NUMBER_OF_STATE_DIM = 1;
-const int NUMBER_OF_ACTION_DIM = representations::NaoJoints::NUM_JOINTS;
+const int NUMBER_OF_ACTION_DIM = 1;//representations::NaoJoints::NUM_JOINTS;
 const int NUMBER_OF_STEPS_PER_EPISODE = 5000 * LearningConstants::NUM_STEP_SAME_INPUT;
 
 MimicLearningAgent::MimicLearningAgent(string host, int serverPort, int monitorPort, int agentNumber, int robotType,
@@ -34,18 +34,16 @@ State MimicLearningAgent::newEpisode() {
     LOG(INFO) << "Starting Episode: " << ++iEpi;
     nbEpisodeSteps = 0;
     episodeAvgReward = 0;
-    iterator = 0;
+    iterator = 100;
     return state();
 }
 
 SimulationResponse MimicLearningAgent::runStep(Action action) {
-//    LOG(INFO) << "#######################";
-//    LOG(INFO) << "Step " << nbEpisodeSteps;
     // read commanded joints positions
     commandedJointsPos = bodyUtils.readAction(action);
-    //bodyUtils.printJoints(referenceMovement[iterator]);
+//    bodyUtils.printJoints(referenceMovement[iterator]);
     currReward = reward();
-    //LOG(INFO) << "end up in state " << iterator << " " << state().observation(0);
+//    LOG(INFO) << "end up in state " << iterator << " " << state().observation(0);
     // update steps count
     nbEpisodeSteps++;
     nbTotalSteps++;
@@ -78,6 +76,7 @@ bool MimicLearningAgent::episodeOver() {
         LOG(INFO) << "Episode finishing because reached end of file";
         LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps;
         rewardFile << episodeAvgReward / nbEpisodeSteps;
+        rewardFile.flush();
         return true;
     }
     return false;
@@ -97,7 +96,7 @@ double MimicLearningAgent::reward() {
 State MimicLearningAgent::state() {
     // return next timestep
     State st;
-    st.add_observation(iterator * 0.02);
+    st.add_observation(iterator * 0.02 - 2);
 //    LOG(INFO) << "next state: " << st.observation(0);
     return st;
 }

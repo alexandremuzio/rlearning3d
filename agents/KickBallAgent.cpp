@@ -16,7 +16,8 @@ KickBallAgent::KickBallAgent(std::string host, int agentPort, int monitorPort,
                                                                          false,
                                                                          control::walking::RobotPhysicalParameters::getNaoPhysicalParameters(),
                                                                          &inverseKinematics) {
-    anglesFile.open("/home/luis/TG/itandroids-soccer3d/source/tools/rlearning3d/rl_agents/angles.txt");
+//    anglesFile.open("/home/luis/TG/itandroids-soccer3d/source/tools/rlearning3d/rl_agents/angles.txt");
+    anglesFile.open("/home/u18440/itandroids-soccer3d/binaries/angles2.txt");
     communication.establishConnection();
     wizCommunication.establishConnection();
     action.create(0);
@@ -25,6 +26,7 @@ KickBallAgent::KickBallAgent(std::string host, int agentPort, int monitorPort,
     perception.perceive(communication);
     action.init(1, "ITAndroids");
     communication.sendMessage(action.getServerMessage());
+    finishedKick = false;
 
     wiz.run();
     wiz.setAgentPositionAndDirection(agentNumber, representations::PlaySide::LEFT, Vector3<double>(0, 0, 0.3), 0);
@@ -39,6 +41,7 @@ KickBallAgent::~KickBallAgent() {
 void KickBallAgent::runStep() {
     if (kick.hasKicked()) {
         kick.reset();
+        finishedKick = true;
     }
     jointsTargets.clear();
     communication.receiveMessage();
@@ -61,16 +64,18 @@ void KickBallAgent::testLoop(int numberOfSteps) {
     accumulatedTime = 0;
     wiz.setPlayMode(representations::RawPlayMode::PLAY_ON);
     // print initial state
-    printJoints(accumulatedTime, perception.getAgentPerception().getNaoJoints());
-    for (int currentStep = 0; currentStep < numberOfSteps; currentStep++) {
+//    printJoints(accumulatedTime, perception.getAgentPerception().getNaoJoints());
+    printJoints(accumulatedTime, jointsTargets);
+    for (int currentStep = 0; currentStep < numberOfSteps && !finishedKick; currentStep++) {
         // update control data
         runStep();
+        // print final frame control
+        printJoints(accumulatedTime, jointsTargets);
         // run all simulation cycle
         step();
         // reach next state
         accumulatedTime += STEP_DT;
-        // print final frame
-        printJoints(accumulatedTime, perception.getAgentPerception().getNaoJoints());
+//        printJoints(accumulatedTime, perception.getAgentPerception().getNaoJoints());
     }
 }
 
@@ -102,6 +107,7 @@ void KickBallAgent::printJoints(double time, representations::NaoJoints curJoint
     anglesFile << curJointsPos.rightKneePitch << " ";
     anglesFile << curJointsPos.rightFootPitch << " ";
     anglesFile << curJointsPos.rightFootRoll << std::endl;
+    anglesFile.flush();
 }
 
 void KickBallAgent::step() {
@@ -114,5 +120,5 @@ void KickBallAgent::step() {
 
 int main() {
     KickBallAgent agent;
-    agent.testLoop(500);
+    agent.testLoop(200);
 }
