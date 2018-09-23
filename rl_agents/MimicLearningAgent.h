@@ -22,14 +22,14 @@ using api::SetupEnvResponse;
 using api::SimulationResponse;
 using api::State;
 
-class MimicLearningAgent : public BaseLearningAgent{
+class MimicLearningAgent{
 public:
     MimicLearningAgent(std::string host = "127.0.0.1", int serverPort = 3100, int monitorPort = 3200, int agentNumber = 2,
                         int robotType = 0, std::string teamName = std::string("ITAndroids"));
 
-    State newEpisode() override;
-    SimulationResponse runStep(Action action) override;
-    SetupEnvResponse setup() override;
+    State newEpisode();
+    SimulationResponse runStep(Action action);
+    SetupEnvResponse setup();
 
 private:
     // Checks whether the episode has finished

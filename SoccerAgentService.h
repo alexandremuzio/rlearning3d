@@ -5,6 +5,7 @@
 #include "RacerLearningAgent.h"
 #include "RunningLearningAgent.h"
 #include "StealBallLearningAgent.h"
+#include <tools/rlearning3d/rl_agents/MimicLearningAgent.h>
 
 #include <grpc++/grpc++.h>
 #include <map>
@@ -47,7 +48,7 @@ private:
 
     int nbAgents = 1;
 
-    unique_ptr<BaseLearningAgent> agent;
+    unique_ptr<MimicLearningAgent> agent;
 };
 
 #endif //ITANDROIDS_SOCCER3D_CPP_SOCCERAGENTSERVER_H
