@@ -17,7 +17,7 @@ using api::Action;
 
 class BodyFeaturesUtils {
 public:
-    BodyFeaturesUtils();
+    BodyFeaturesUtils(int serverPort);
 
     ~BodyFeaturesUtils();
 

@@ -26,8 +26,15 @@ const int NUMBER_OF_STEPS_PER_EPISODE = 5000 * LearningConstants::NUM_STEP_SAME_
 ZMPKickLearningAgent::ZMPKickLearningAgent(std::string host, int serverPort, int monitorPort, int agentNumber,
                                            int robotType, std::string teamName)
         : BaseLearningAgent(host, serverPort, monitorPort, agentNumber, robotType, teamName),
-          controller(0, 180.0 / (M_PI * 7.0)) {
+          controller(0, 180.0 / (M_PI * 7.0)), bodyUtils(serverPort),
+          inverseKinematics(control::walking::RobotPhysicalParameters::getNaoPhysicalParameters()),
+          kick(control::kick::KickZMPParams::getDefaultKickZMPParams(), false,
+               control::walking::RobotPhysicalParameters::getNaoPhysicalParameters(), &inverseKinematics) {
+
     featEx = make_unique<FeatureExtractor>(wiz, 0.0, 0.0, 0.0);
+    learningFile.open("angles.txt"); // open file
+    rewardFile.open("../../plots/rewards" + std::to_string(serverPort) + ".txt");
+    referenceMovement = bodyUtils.preProcessFile(learningFile);
     //std::ifstream config_doc("config/zmp_kick.json");
     //config_doc >> config;
 }
@@ -37,18 +44,17 @@ State ZMPKickLearningAgent::newEpisode() {
     LOG(INFO) << "Starting Episode: " << ++iEpi;
     nbEpisodeSteps = 0;
     episodeAvgReward = 0;
-    learningFile.open("angles.txt"); // open file
+    iterator = 0;
 
     // set initial position in the field
     wiz.setGameTime(0);
     wiz.setPlayMode(representations::RawPlayMode::PLAY_ON);
-    wiz.setBallPosition(Vector3<double>(2,2,0));
+    wiz.setBallPosition(Vector3<double>(2, 2, 0));
     wiz.setAgentPositionAndDirection(agentNumber, representations::PlaySide::LEFT,
                                      Vector3<double>(0.0, 0.0, 0.35), 0);
-
     // set initial joints pos
     decisionMaking.movementRequest == nullptr;
-    for(int i = 0; i < 20; i++)
+    for (int i = 0; i < 20; i++)
         fullStep();
 
     // print episode number
@@ -57,14 +63,20 @@ State ZMPKickLearningAgent::newEpisode() {
     roboviz->drawAnnotation(&episodeString, 0, 0.3, 0.0, 0.0, 0.0, 1.0, &epiString);
     std::string buffer(epiString);
     roboviz->swapBuffers(&buffer);
-
     // check initial positions
-    while(!bodyUtils.initialPosSanityCheck(perception.getAgentPerception().getNaoJoints())){
-        for(int i = 0; i < 50; i++)
+    while (!bodyUtils.initialPosSanityCheck(perception.getAgentPerception().getNaoJoints())) {
+        for (int i = 0; i < 50; i++)
             fullStep();
     }
     wiz.setAgentPositionAndDirection(agentNumber, representations::PlaySide::LEFT,
                                      Vector3<double>(0.0, 0.0, 0.35), 0);
+    // go to initial kick position
+    for(; iterator < 100; iterator++){
+        kick.update(0.0,commandedJointsPos);
+        commandedJointsPos.scale(iterator * 0.02 / 2.0);
+        commandedJointsPos *= representations::NaoJoints::getNaoDirectionsFixing();
+        step();
+    }
     return state();
 }
 
@@ -109,22 +121,20 @@ SetupEnvResponse ZMPKickLearningAgent::setup() {
 
 bool ZMPKickLearningAgent::episodeOver() {
     Vector3<double> selfPos = wiz.getAgentTranslation(agentNumber);
-    if(modeling.getAgentModel().hasFallen() /*selfPos.z < 0.27*/ ) {
-        learningFile.close();
+    if (modeling.getAgentModel().hasFallen() /*selfPos.z < 0.27*/ ) {
         LOG(INFO) << "Episode finishing because agent fell";
         LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps;
         LOG(INFO) << "Steps Until Fall: " << nbEpisodeSteps;
         decisionMaking.movementRequest = nullptr;
-        for (int i = 0; i < 80; i++ )
+        for (int i = 0; i < 80; i++)
             fullStep();
         return true;
     }
-    if(learningFile.eof()){
-        learningFile.close();
+    if (iterator >= referenceMovement.size()) {
         LOG(INFO) << "Episode finishing because reached end of file";
         LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps;
         decisionMaking.movementRequest = nullptr;
-        for (int i = 0; i < 80; i++ )
+        for (int i = 0; i < 80; i++)
             fullStep();
         return true;
     }
@@ -135,7 +145,7 @@ double ZMPKickLearningAgent::reward() {
     double reward = 0;
 
     // read reference frame from file
-    representations::NaoJoints referenceFrame = bodyUtils.readJointsFromFile(learningFile);
+    representations::NaoJoints referenceFrame = referenceMovement[iterator++];
     // get actual frame
     representations::NaoJoints actualFrame = perception.getAgentPerception().getNaoJoints();
 
@@ -143,7 +153,7 @@ double ZMPKickLearningAgent::reward() {
     double jointsDiffNorm = bodyUtils.getJointsDiffNorm(actualFrame, referenceFrame);
 
     // add joints position diff factor in reward
-    reward += JOINTS_POSITIONS_WEIGHT * exp(- 2 * jointsDiffNorm);
+    reward += JOINTS_POSITIONS_WEIGHT * exp(-2 * jointsDiffNorm);
 
     // update body models
     selfBodyModel.update(actualFrame);
@@ -154,10 +164,10 @@ double ZMPKickLearningAgent::reward() {
     Vector3<double> selfCenterOfMass = selfFactorTransform.invert() * selfBodyModel.computeCenterOfMass();
     Vector3<double> refCenterOfMass = referenceFactorTransform.invert() * referenceBodyModel.computeCenterOfMass();
     // get center of mass difference
-    Vector3<double> CMdiff = selfCenterOfMass - refCenterOfMass;
+    Vector3<double> cmDiff = selfCenterOfMass - refCenterOfMass;
 
     // add CM diff factor in reward
-    reward += CENTER_OF_MASS_WEIGHT * exp(-10 * CMdiff.squareAbs());
+    reward += CENTER_OF_MASS_WEIGHT * exp(-10 * cmDiff.squareAbs());
 
     // now the end effector contribution
     Vector3<double> selfEndEffector = selfBodyModel.getRightLegEndEffectorTransform().translation;
@@ -176,12 +186,7 @@ double ZMPKickLearningAgent::reward() {
 State ZMPKickLearningAgent::state() {
     // return next timestep
     State st;
-    // read next time step from file
-    string timeStep;
-    learningFile >> timeStep;
-    currState = timeStep.empty() ? currState + 0.02 : std::stod(timeStep);
-    st.add_observation(currState);
-//    LOG(INFO) << "next state: " << st.observation(0);
+    st.add_observation(iterator * 0.02 - 2);
     return st;
 }
 

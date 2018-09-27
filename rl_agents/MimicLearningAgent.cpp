@@ -19,13 +19,13 @@ const double END_EFFECTOR_WEIGHT = 0.15;
 
 // RL
 const int NUMBER_OF_STATE_DIM = 1;
-const int NUMBER_OF_ACTION_DIM = 1;//representations::NaoJoints::NUM_JOINTS;
+const int NUMBER_OF_ACTION_DIM = representations::NaoJoints::NUM_JOINTS;
 const int NUMBER_OF_STEPS_PER_EPISODE = 5000 * LearningConstants::NUM_STEP_SAME_INPUT;
 
 MimicLearningAgent::MimicLearningAgent(string host, int serverPort, int monitorPort, int agentNumber, int robotType,
-                                       string teamName) {
-    learningFile.open("angles.txt"); // open file
-    rewardFile.open("../../plots/rewards.txt");
+                                       string teamName) : bodyUtils(serverPort) {
+    learningFile.open("angles_commands.txt"); // open file
+    rewardFile.open("../../plots/rewards"+std::to_string(serverPort)+".txt");
     referenceMovement = bodyUtils.preProcessFile(learningFile);
 }
 
@@ -74,7 +74,7 @@ SetupEnvResponse MimicLearningAgent::setup() {
 bool MimicLearningAgent::episodeOver() {
     if(iterator >= referenceMovement.size()){
         LOG(INFO) << "Episode finishing because reached end of file";
-        LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps;
+        LOG(INFO) << "Episode Average reward: " << episodeAvgReward / nbEpisodeSteps << std::flush;
         rewardFile << episodeAvgReward / nbEpisodeSteps;
         rewardFile.flush();
         return true;
@@ -97,6 +97,5 @@ State MimicLearningAgent::state() {
     // return next timestep
     State st;
     st.add_observation(iterator * 0.02 - 2);
-//    LOG(INFO) << "next state: " << st.observation(0);
     return st;
 }

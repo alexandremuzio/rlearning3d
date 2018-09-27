@@ -66,8 +66,12 @@ private:
     control::ControlStub controlStub;
     control::JointsController controller;
     representations::NaoJoints commandedJointsPos;
-    representations::NaoJoints initialJointsPos;
+    control::walking::InverseKinematics inverseKinematics;
+    control::kick::KickZMP kick;
     BodyFeaturesUtils bodyUtils;
+    std::vector<representations::NaoJoints> referenceMovement;
+    int iterator;
+    std::ofstream rewardFile;
     modeling::BodyModel selfBodyModel;
     modeling::BodyModel referenceBodyModel;
 

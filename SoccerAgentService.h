@@ -48,7 +48,7 @@ private:
 
     int nbAgents = 1;
 
-    unique_ptr<MimicLearningAgent> agent;
+    unique_ptr<BaseLearningAgent> agent;
 };
 
 #endif //ITANDROIDS_SOCCER3D_CPP_SOCCERAGENTSERVER_H

@@ -7,13 +7,13 @@
 #include "math/MathUtils.h"
 #include "string.h"
 
-BodyFeaturesUtils::BodyFeaturesUtils() {
+BodyFeaturesUtils::BodyFeaturesUtils(int serverPort) {
     LOG(INFO) << "creating body utils" << std::flush;
     jointsToPrint = {"rightFootRoll","rightFootPitch","rightKneePitch","rightHipPitch","rightHipRoll","rightHipYawPitch"};
     filesToPrint.resize(jointsToPrint.size());
     std::string prefix = "../../plots/";
     for(int i = 0; i < jointsToPrint.size(); i++)
-        filesToPrint[i].open(prefix+jointsToPrint[i]+".txt");
+        filesToPrint[i].open(prefix+jointsToPrint[i]+std::to_string(serverPort)+".txt");
     jointsWeight.neckPitch = 1;
     jointsWeight.neckYaw = 1;
     jointsWeight.leftShoulderPitch = 1;
@@ -80,8 +80,6 @@ representations::NaoJoints BodyFeaturesUtils::readJointsFromFile(std::ifstream &
 representations::NaoJoints BodyFeaturesUtils::readAction(Action action){
     representations::NaoJoints actionFrame;
 
-    actionFrame.rightKneePitch = action.action(0);
-    return actionFrame;
     actionFrame.neckPitch = action.action(0);
     actionFrame.neckYaw = action.action(1);
     actionFrame.leftShoulderPitch = action.action(2);
@@ -143,30 +141,51 @@ double BodyFeaturesUtils::getJointsDiffNorm(representations::NaoJoints &frame1, 
     double norm = 0;
     representations::NaoJoints frameDiff = frame1 - frame2;
 
+    norm += (frame1.neckPitch - frame2.neckPitch) * (frame1.neckPitch - frame2.neckPitch);
+    norm += (frame1.neckYaw - frame2.neckYaw) * (frame1.neckYaw - frame2.neckYaw);
+    norm += (frame1.leftShoulderPitch - frame2.leftShoulderPitch) * (frame1.leftShoulderPitch - frame2.leftShoulderPitch);
+    norm += (frame1.leftShoulderYaw - frame2.leftShoulderYaw) * (frame1.leftShoulderYaw - frame2.leftShoulderYaw);
+    norm += (frame1.leftArmRoll - frame2.leftArmRoll) * (frame1.leftArmRoll - frame2.leftArmRoll);
+    norm += (frame1.leftArmYaw - frame2.leftArmYaw) * (frame1.leftArmYaw - frame2.leftArmYaw);
+    norm += (frame1.rightShoulderPitch - frame2.rightShoulderPitch) * (frame1.rightShoulderPitch - frame2.rightShoulderPitch);
+    norm += (frame1.rightShoulderYaw - frame2.rightShoulderYaw) * (frame1.rightShoulderYaw - frame2.rightShoulderYaw);
+    norm += (frame1.rightArmRoll - frame2.rightArmRoll) * (frame1.rightArmRoll - frame2.rightArmRoll);
+    norm += (frame1.rightArmYaw - frame2.rightArmYaw) * (frame1.rightArmYaw - frame2.rightArmYaw);
+    norm += (frame1.leftHipYawPitch - frame2.leftHipYawPitch) * (frame1.leftHipYawPitch - frame2.leftHipYawPitch);
+    norm += (frame1.leftHipRoll - frame2.leftHipRoll) * (frame1.leftHipRoll - frame2.leftHipRoll);
+    norm += (frame1.leftHipPitch - frame2.leftHipPitch) * (frame1.leftHipPitch - frame2.leftHipPitch);
+    norm += (frame1.leftKneePitch - frame2.leftKneePitch) * (frame1.leftKneePitch - frame2.leftKneePitch);
+    norm += (frame1.leftFootPitch - frame2.leftFootPitch) * (frame1.leftFootPitch - frame2.leftFootPitch);
+    norm += (frame1.leftFootRoll - frame2.leftFootRoll) * (frame1.leftFootRoll - frame2.leftFootRoll);
+    norm += (frame1.rightHipYawPitch - frame2.rightHipYawPitch) * (frame1.rightHipYawPitch - frame2.rightHipYawPitch);
+    norm += (frame1.rightHipRoll - frame2.rightHipRoll) * (frame1.rightHipRoll - frame2.rightHipRoll);
+    norm += (frame1.rightHipPitch - frame2.rightHipPitch) * (frame1.rightHipPitch - frame2.rightHipPitch);
     norm += (frame1.rightKneePitch - frame2.rightKneePitch) * (frame1.rightKneePitch - frame2.rightKneePitch);
-    return norm;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.neckPitch)) * jointsWeight.neckPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.neckYaw)) * jointsWeight.neckYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftShoulderPitch)) * jointsWeight.leftShoulderPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftShoulderYaw)) * jointsWeight.leftShoulderYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftArmRoll)) * jointsWeight.leftArmRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftArmYaw)) * jointsWeight.leftArmYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightShoulderPitch)) * jointsWeight.rightShoulderPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightShoulderYaw)) * jointsWeight.rightShoulderYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightArmRoll)) * jointsWeight.rightArmRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightArmYaw)) * jointsWeight.rightArmYaw;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipYawPitch)) * jointsWeight.leftHipYawPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipRoll)) * jointsWeight.leftHipRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipPitch)) * jointsWeight.leftHipPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftKneePitch)) * jointsWeight.leftKneePitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftFootPitch)) * jointsWeight.leftFootPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftFootRoll)) * jointsWeight.leftFootRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipYawPitch)) * jointsWeight.rightHipYawPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipRoll)) * jointsWeight.rightHipRoll;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipPitch)) * jointsWeight.rightHipPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightKneePitch)) * jointsWeight.rightKneePitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightFootPitch)) * jointsWeight.rightFootPitch;
-    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightFootRoll)) * jointsWeight.rightFootRoll;
+    norm += (frame1.rightFootPitch - frame2.rightFootPitch) * (frame1.rightFootPitch - frame2.rightFootPitch);
+    norm += (frame1.rightFootRoll - frame2.rightFootRoll) * (frame1.rightFootRoll - frame2.rightFootRoll);
+
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.neckPitch)) * jointsWeight.neckPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.neckYaw)) * jointsWeight.neckYaw;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftShoulderPitch)) * jointsWeight.leftShoulderPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftShoulderYaw)) * jointsWeight.leftShoulderYaw;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftArmRoll)) * jointsWeight.leftArmRoll;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftArmYaw)) * jointsWeight.leftArmYaw;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightShoulderPitch)) * jointsWeight.rightShoulderPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightShoulderYaw)) * jointsWeight.rightShoulderYaw;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightArmRoll)) * jointsWeight.rightArmRoll;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightArmYaw)) * jointsWeight.rightArmYaw;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipYawPitch)) * jointsWeight.leftHipYawPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipRoll)) * jointsWeight.leftHipRoll;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftHipPitch)) * jointsWeight.leftHipPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftKneePitch)) * jointsWeight.leftKneePitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftFootPitch)) * jointsWeight.leftFootPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.leftFootRoll)) * jointsWeight.leftFootRoll;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipYawPitch)) * jointsWeight.rightHipYawPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipRoll)) * jointsWeight.rightHipRoll;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightHipPitch)) * jointsWeight.rightHipPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightKneePitch)) * jointsWeight.rightKneePitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightFootPitch)) * jointsWeight.rightFootPitch;
+//    norm += fabs(MathUtils::normalizeAngle(frameDiff.rightFootRoll)) * jointsWeight.rightFootRoll;
 
     return norm;
 }

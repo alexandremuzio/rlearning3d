@@ -4,6 +4,8 @@
 
 #include "KickBallAgent.h"
 
+const int STEPS_DELAY = 0;
+
 KickBallAgent::KickBallAgent(std::string host, int agentPort, int monitorPort,
                              int agentNumber,
                              int robotType, std::string teamName) : communication(
@@ -17,7 +19,11 @@ KickBallAgent::KickBallAgent(std::string host, int agentPort, int monitorPort,
                                                                          control::walking::RobotPhysicalParameters::getNaoPhysicalParameters(),
                                                                          &inverseKinematics) {
 //    anglesFile.open("/home/luis/TG/itandroids-soccer3d/source/tools/rlearning3d/rl_agents/angles.txt");
-    anglesFile.open("/home/u18440/itandroids-soccer3d/binaries/angles2.txt");
+    printCommands = false;
+    bool useDevcloud = false;
+    string file_suffix = printCommands ? "angles_commands" : "angles";
+    string file_prefix = useDevcloud ? "~/itandroids-soccer3d/binaries/" : "";
+    anglesFile.open(file_suffix + ".txt");
     communication.establishConnection();
     wizCommunication.establishConnection();
     action.create(0);
@@ -69,13 +75,17 @@ void KickBallAgent::testLoop(int numberOfSteps) {
     for (int currentStep = 0; currentStep < numberOfSteps && !finishedKick; currentStep++) {
         // update control data
         runStep();
-        // print final frame control
-        printJoints(accumulatedTime, jointsTargets);
+        if(printCommands) // print final frame control
+            printJoints(accumulatedTime, jointsTargets);
         // run all simulation cycle
         step();
         // reach next state
         accumulatedTime += STEP_DT;
-//        printJoints(accumulatedTime, perception.getAgentPerception().getNaoJoints());
+        if(!printCommands){
+            if(accumulatedTime - STEPS_DELAY >= 0)
+                printJoints(accumulatedTime-STEPS_DELAY, perception.getAgentPerception().getNaoJoints());
+        }
+//
     }
 }
 

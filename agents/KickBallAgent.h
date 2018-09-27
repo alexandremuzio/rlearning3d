@@ -15,7 +15,7 @@
 
 class KickBallAgent {
 public:
-    KickBallAgent(std::string host = "127.0.0.1", int agentPort = 3000, int monitorPort = 3300, int agentNumber = 1,
+    KickBallAgent(std::string host = "127.0.0.1", int agentPort = 3100, int monitorPort = 3200, int agentNumber = 1,
                   int robotType = 0, std::string teamName = std::string("ITAndroids"));
 
     ~KickBallAgent();
@@ -44,6 +44,7 @@ private:
     control::JointsController controller;
     representations::NaoJoints jointsTargets;
     bool finishedKick;
+    bool printCommands;
 
     std::ofstream anglesFile;
     // Runs simulation step in the environment
