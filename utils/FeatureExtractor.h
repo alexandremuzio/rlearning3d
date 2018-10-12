@@ -12,6 +12,23 @@ using itandroids_lib::math::Pose2D;
 using itandroids_lib::math::Vector3;
 using itandroids_lib::math::Vector2;
 
+struct lowPassFilterParams{
+    double bandwidth;
+    double sampleTime;
+    double b1;
+    double a1;
+    double a0;
+    Vector2<double> up, yp;
+    lowPassFilterParams(double bw, double T) : bandwidth(bw), sampleTime(T){
+        b1 = (bandwidth * sampleTime - 2.0f) / (bandwidth * sampleTime + 2.0f);
+        a0 = bandwidth * sampleTime / (bandwidth * sampleTime + 2.0f);
+        a1 = bandwidth * sampleTime / (bandwidth * sampleTime + 2.0f);
+    };
+    void reset(){
+        up = Vector2<double>();
+        yp = Vector2<double>();
+    };
+};
 
 class FeatureExtractor {
 
@@ -38,6 +55,7 @@ public:
     bool oppFallen(int agentNum = 1, int t = 0);
     Vector3<double> ballPos(int t = 0);
     Vector2<double> ballSpeed(int t = 0);
+    bool ballStopped();
 
     double distanceAgentToBall(int agentNum = 1, int t = 0);
     double distanceOppToBall(int agentNum =1 , int t = 0);
@@ -60,6 +78,8 @@ private:
     const static int NUM_OF_AGENTS = 22;
 
     const double LOW_PASS_FILTER_ALPHA = 0.5;
+    const double BALL_VEL_LIMIT_STOP = 0.04;
+    lowPassFilterParams filterParams;
 
     int timestep;
 

@@ -15,7 +15,7 @@ public:
     static constexpr double SERVER_STEP_TIME =  0.020;
 
     // RL
-    static constexpr int NUM_STEP_SAME_INPUT = 3;
+    static constexpr int NUM_STEP_SAME_INPUT = 1;
 
 };
 

@@ -26,38 +26,38 @@ const double SERVER_STEP_TIME = 1 / 60.0;
 void RacerLearningAgent::drawEnvironment() {
     std::string selfStr("pos.field");
 //    roboviz->drawLine(0, INITIAL_ROBOT_Y, 0, 0, RACE_SIZE + INITIAL_ROBOT_Y, 0, 5, 1, 1, 1, &selfStr);
-    roboviz->drawLine(-LANE_HALF_WIDTH, INITIAL_ROBOT_Y, 0, -LANE_HALF_WIDTH, RACE_SIZE + INITIAL_ROBOT_Y, 0, 5, 0, 0, 0, &selfStr);
-    roboviz->drawLine(LANE_HALF_WIDTH, INITIAL_ROBOT_Y, 0, LANE_HALF_WIDTH, RACE_SIZE + INITIAL_ROBOT_Y, 0, 5, 0, 0, 0, &selfStr);
-
-    roboviz->drawLine(-LANE_HALF_WIDTH, INITIAL_ROBOT_Y, 0, LANE_HALF_WIDTH, INITIAL_ROBOT_Y, 0, 5, 0, 1, 0, &selfStr);
-    roboviz->drawLine(-LANE_HALF_WIDTH, RACE_SIZE + INITIAL_ROBOT_Y, 0, LANE_HALF_WIDTH, RACE_SIZE + INITIAL_ROBOT_Y,0, 5, 1, 0, 0, &selfStr);
-
-    std::string buffer("pos.field");
-    roboviz->swapBuffers(&buffer);
+//    roboviz->drawLine(-LANE_HALF_WIDTH, INITIAL_ROBOT_Y, 0, -LANE_HALF_WIDTH, RACE_SIZE + INITIAL_ROBOT_Y, 0, 5, 0, 0, 0, &selfStr);
+//    roboviz->drawLine(LANE_HALF_WIDTH, INITIAL_ROBOT_Y, 0, LANE_HALF_WIDTH, RACE_SIZE + INITIAL_ROBOT_Y, 0, 5, 0, 0, 0, &selfStr);
+//
+//    roboviz->drawLine(-LANE_HALF_WIDTH, INITIAL_ROBOT_Y, 0, LANE_HALF_WIDTH, INITIAL_ROBOT_Y, 0, 5, 0, 1, 0, &selfStr);
+//    roboviz->drawLine(-LANE_HALF_WIDTH, RACE_SIZE + INITIAL_ROBOT_Y, 0, LANE_HALF_WIDTH, RACE_SIZE + INITIAL_ROBOT_Y,0, 5, 1, 0, 0, &selfStr);
+//
+//    std::string buffer("pos.field");
+//    roboviz->swapBuffers(&buffer);
 }
 void RacerLearningAgent::drawStats() {
-    string stats = "stats";
-    string episodeString = "Episode: " + to_string(iEpi);
-    string stepsString = "Number of steps: " + to_string(nbSteps);
-    string rewardString = "Reward: " + to_string(reward());
-    string actionSpeedString = "Action Speed: (" + to_string(actionXSpeed) + ", " + to_string(actionYSpeed) + ", " + to_string(
-            actionThetaSpeed) + ")";
-    string currPosition = "Curr Pose: (" + to_string(currentPos.x) + ", " + to_string(currentPos.y) + ", " + to_string(
-            currentTheta) + ")";
-    string currSpeedString = "Curr Speed: (" + to_string(currentXSpeed) + ", " + to_string(currentYSpeed) + ", " + to_string(
-            currentThetaSpeed) + ")";
-
-
-    string epiString = stats + ".epi";
-    roboviz->drawAnnotation(&episodeString, 3*(agentNumber- 1), 0.3, 0.0, 0.0, 0.0, 1.0, &epiString);
-    roboviz->drawAnnotation(&stepsString, 3*(agentNumber- 1), 0.0, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&rewardString, 3*(agentNumber- 1), -0.3, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&currSpeedString, 3*(agentNumber- 1), -0.9, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&actionSpeedString, 3*(agentNumber- 1), -1.2, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&currPosition, 3*(agentNumber- 1), -1.5, 0.0, 0.0, 0.0, 1.0, &stats);
-
-    std::string buffer(stats);
-    roboviz->swapBuffers(&buffer);
+//    string stats = "stats";
+//    string episodeString = "Episode: " + to_string(iEpi);
+//    string stepsString = "Number of steps: " + to_string(nbSteps);
+//    string rewardString = "Reward: " + to_string(reward());
+//    string actionSpeedString = "Action Speed: (" + to_string(actionXSpeed) + ", " + to_string(actionYSpeed) + ", " + to_string(
+//            actionThetaSpeed) + ")";
+//    string currPosition = "Curr Pose: (" + to_string(currentPos.x) + ", " + to_string(currentPos.y) + ", " + to_string(
+//            currentTheta) + ")";
+//    string currSpeedString = "Curr Speed: (" + to_string(currentXSpeed) + ", " + to_string(currentYSpeed) + ", " + to_string(
+//            currentThetaSpeed) + ")";
+//
+//
+//    string epiString = stats + ".epi";
+//    roboviz->drawAnnotation(&episodeString, 3*(agentNumber- 1), 0.3, 0.0, 0.0, 0.0, 1.0, &epiString);
+//    roboviz->drawAnnotation(&stepsString, 3*(agentNumber- 1), 0.0, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&rewardString, 3*(agentNumber- 1), -0.3, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&currSpeedString, 3*(agentNumber- 1), -0.9, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&actionSpeedString, 3*(agentNumber- 1), -1.2, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&currPosition, 3*(agentNumber- 1), -1.5, 0.0, 0.0, 0.0, 1.0, &stats);
+//
+//    std::string buffer(stats);
+//    roboviz->swapBuffers(&buffer);
 }
 bool RacerLearningAgent::robotLeftTrack() {
     return fabs(currentPos.x) > LANE_HALF_WIDTH;

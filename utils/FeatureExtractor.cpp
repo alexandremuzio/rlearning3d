@@ -6,7 +6,8 @@ FeatureExtractor::FeatureExtractor(utils::wizard::Wizard &wizard, double initial
                                    double initialTheta) : wiz(wizard),
                                                           COORD_REF_X(initialX),
                                                           COORD_REF_Y(initialY),
-                                                          COORD_REF_THETA(initialTheta) {
+                                                          COORD_REF_THETA(initialTheta),
+                                                          filterParams(2 * M_PI * 5, 0.02) {
     reset();
 }
 
@@ -48,6 +49,7 @@ void FeatureExtractor::reset() {
         ballSpeed_ = Vector2<double>();
         lastBallSpeed_ = Vector2<double>();
     }
+    filterParams.reset();
 }
 
 double FeatureExtractor::agentAngle(int agentNum, int t) {
@@ -134,9 +136,9 @@ double FeatureExtractor::calcAgentAngle(int idx) {
         return 0.0;
 
     if (angle > M_PI)
-        angle -= 2* M_PI;
+        angle -= 2 * M_PI;
     if (angle < -M_PI)
-        angle += 2* M_PI;
+        angle += 2 * M_PI;
 
     return angle;
 }
@@ -168,11 +170,20 @@ Vector3<double> FeatureExtractor::calcBallPos() {
 Vector2<double> FeatureExtractor::calcBallSpeed() {
     double den = LearningConstants::SERVER_STEP_TIME * LearningConstants::NUM_STEP_SAME_INPUT;
 
-    double xSpeed =  (ballSpeed_ - lastBallSpeed_).x / den;
-    double ySpeed =  (ballSpeed_ - lastBallSpeed_).y / den;
+    double xSpeed = (ballPos_ - lastBallPos_).x / den;
+    double ySpeed = (ballPos_ - lastBallPos_).y / den;
 
-    ballSpeed_.x += LOW_PASS_FILTER_ALPHA * (xSpeed -  ballSpeed_.x);
-    ballSpeed_.y += LOW_PASS_FILTER_ALPHA * (xSpeed -  ballSpeed_.y);
+    ballSpeed_.x = -filterParams.b1 * filterParams.yp.x + filterParams.a0 * xSpeed + filterParams.a1 * filterParams.up.x;
+    ballSpeed_.y = -filterParams.b1 * filterParams.yp.y + filterParams.a0 * ySpeed + filterParams.a1 * filterParams.up.y;
+
+    filterParams.up = Vector2<double>(xSpeed,ySpeed);
+    filterParams.yp = ballSpeed_;
 
     return ballSpeed_;
+}
+
+bool FeatureExtractor::ballStopped() {
+//    std::cout << "checking if ball stopped" << std::endl;
+//    std::cout << "ball speed: " << ballSpeed_.x << " " << ballSpeed_.y << " " << ballSpeed_.abs() << std::endl;
+    return ballSpeed_.abs() < BALL_VEL_LIMIT_STOP;
 }

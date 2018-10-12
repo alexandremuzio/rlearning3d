@@ -31,67 +31,67 @@ const int NUMBER_OF_STEPS_PER_EPISODE = 5000 * LearningConstants::NUM_STEP_SAME_
 // Helper utils methods
 // TODO add this to a drawing class.
 void StealBallLearningAgent::drawEnvironment() {
-    std::string selfStr("pos.field");
-    roboviz->drawLine(-MAX_FIELD_X, -MAX_FIELD_Y, 0, -MAX_FIELD_X, MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
-    roboviz->drawLine(MAX_FIELD_X, -MAX_FIELD_Y, 0, MAX_FIELD_X, MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
-    roboviz->drawLine(-MAX_FIELD_X, -MAX_FIELD_Y, 0, MAX_FIELD_X, -MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
-    roboviz->drawLine(-MAX_FIELD_X, MAX_FIELD_Y, 0, MAX_FIELD_X, MAX_FIELD_Y,0, 5, 1, 1, 0, &selfStr);
-
-    double angle = featEx->agentAngle();
-    roboviz->drawLine(featEx->agentPos().x, featEx->agentPos().y, 0,
-                      featEx->agentPos().x + cos(angle), featEx->agentPos().y + sin(angle), 0,
-                     5, 0, 0.2, 1, &selfStr);
-
-    double oppAngle = featEx->oppAngle();
-    roboviz->drawLine(featEx->oppPos().x, featEx->oppPos().y, 0,
-                      featEx->oppPos().x + cos(oppAngle), featEx->oppPos().y + sin(oppAngle), 0,
-                     5, 1, 0.2, 0, &selfStr);
-
-    std::string buffer("");
-    roboviz->swapBuffers(&buffer);
+//    std::string selfStr("pos.field");
+//    roboviz->drawLine(-MAX_FIELD_X, -MAX_FIELD_Y, 0, -MAX_FIELD_X, MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
+//    roboviz->drawLine(MAX_FIELD_X, -MAX_FIELD_Y, 0, MAX_FIELD_X, MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
+//    roboviz->drawLine(-MAX_FIELD_X, -MAX_FIELD_Y, 0, MAX_FIELD_X, -MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
+//    roboviz->drawLine(-MAX_FIELD_X, MAX_FIELD_Y, 0, MAX_FIELD_X, MAX_FIELD_Y,0, 5, 1, 1, 0, &selfStr);
+//
+//    double angle = featEx->agentAngle();
+//    roboviz->drawLine(featEx->agentPos().x, featEx->agentPos().y, 0,
+//                      featEx->agentPos().x + cos(angle), featEx->agentPos().y + sin(angle), 0,
+//                     5, 0, 0.2, 1, &selfStr);
+//
+//    double oppAngle = featEx->oppAngle();
+//    roboviz->drawLine(featEx->oppPos().x, featEx->oppPos().y, 0,
+//                      featEx->oppPos().x + cos(oppAngle), featEx->oppPos().y + sin(oppAngle), 0,
+//                     5, 1, 0.2, 0, &selfStr);
+//
+//    std::string buffer("");
+//    roboviz->swapBuffers(&buffer);
 }
 void StealBallLearningAgent::drawStats() {
-    string stats = "stats";
-    string episodeString = "Episode: " + to_string(iEpi);
-    string stepsString = "Number of steps: " + to_string(nbEpisodeSteps);
-    string rewardString = "Reward: " + to_string(currReward);
-
-    string agentPositionStr =
-            "Curr Pose: (" + to_string(featEx->agentPos().x) + ", " + to_string(featEx->agentPos().y) + ", " +
-            to_string(
-                    featEx->agentAngle() * 180 / M_PI) + ")";
-    string agentSpeedStr = "Curr Speed: (" + to_string(featEx->agentSpeed().translation.x) + ", " +
-                           to_string(featEx->agentSpeed().translation.y) + ", " + to_string(
-            featEx->agentSpeed().rotation) + ")";
-    string actionSpeedString =
-            "Action Speed: (" + to_string(commandedXSpeed) + ", " + to_string(commandedYSpeed) + ", " + to_string(
-                    commandedThetaSpeed) + ")";
-    string oppPositionStr =
-            "Opp Pose: (" + to_string(featEx->oppPos().x) + ", " + to_string(featEx->oppPos().y) + ", " +
-            to_string(
-                    featEx->oppAngle() * 180 / M_PI) + ")";
-    string ballPosStr =
-            "Ball Pos: (" + to_string(featEx->ballPos().x) + ", " + to_string(featEx->ballPos().y);
-    string ballSpeedStr =
-            "Ball Speed: (" + to_string(featEx->ballSpeed().x) + ", " + to_string(featEx->ballSpeed().y);
-    string distBallStr = "Dist to Ball: " + to_string(featEx->distanceAgentToBall());
-    string distOppBallStr = "Dist to Ball: " + to_string(featEx->distanceOppToBall());
-
-    string epiString = stats + ".epi";
-    roboviz->drawAnnotation(&episodeString, 0, 0.3, 0.0, 0.0, 0.0, 1.0, &epiString);
-    roboviz->drawAnnotation(&stepsString, 0, 0.0, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&rewardString, 0, -0.3, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&agentPositionStr, 0, -0.7, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&agentSpeedStr, 0, -1.1, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&actionSpeedString, 0, -1.5, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&oppPositionStr, 0, -1.9, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&ballPosStr, 0, -2.3, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&ballSpeedStr, 0, -2.7, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&distBallStr, 0, -3.1, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&distOppBallStr, 0, -3.5, 0.0, 0.0, 0.0, 1.0, &stats);
-
-    std::string buffer(stats);
-    roboviz->swapBuffers(&buffer);
+//    string stats = "stats";
+//    string episodeString = "Episode: " + to_string(iEpi);
+//    string stepsString = "Number of steps: " + to_string(nbEpisodeSteps);
+//    string rewardString = "Reward: " + to_string(currReward);
+//
+//    string agentPositionStr =
+//            "Curr Pose: (" + to_string(featEx->agentPos().x) + ", " + to_string(featEx->agentPos().y) + ", " +
+//            to_string(
+//                    featEx->agentAngle() * 180 / M_PI) + ")";
+//    string agentSpeedStr = "Curr Speed: (" + to_string(featEx->agentSpeed().translation.x) + ", " +
+//                           to_string(featEx->agentSpeed().translation.y) + ", " + to_string(
+//            featEx->agentSpeed().rotation) + ")";
+//    string actionSpeedString =
+//            "Action Speed: (" + to_string(commandedXSpeed) + ", " + to_string(commandedYSpeed) + ", " + to_string(
+//                    commandedThetaSpeed) + ")";
+//    string oppPositionStr =
+//            "Opp Pose: (" + to_string(featEx->oppPos().x) + ", " + to_string(featEx->oppPos().y) + ", " +
+//            to_string(
+//                    featEx->oppAngle() * 180 / M_PI) + ")";
+//    string ballPosStr =
+//            "Ball Pos: (" + to_string(featEx->ballPos().x) + ", " + to_string(featEx->ballPos().y);
+//    string ballSpeedStr =
+//            "Ball Speed: (" + to_string(featEx->ballSpeed().x) + ", " + to_string(featEx->ballSpeed().y);
+//    string distBallStr = "Dist to Ball: " + to_string(featEx->distanceAgentToBall());
+//    string distOppBallStr = "Dist to Ball: " + to_string(featEx->distanceOppToBall());
+//
+//    string epiString = stats + ".epi";
+//    roboviz->drawAnnotation(&episodeString, 0, 0.3, 0.0, 0.0, 0.0, 1.0, &epiString);
+//    roboviz->drawAnnotation(&stepsString, 0, 0.0, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&rewardString, 0, -0.3, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&agentPositionStr, 0, -0.7, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&agentSpeedStr, 0, -1.1, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&actionSpeedString, 0, -1.5, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&oppPositionStr, 0, -1.9, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&ballPosStr, 0, -2.3, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&ballSpeedStr, 0, -2.7, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&distBallStr, 0, -3.1, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&distOppBallStr, 0, -3.5, 0.0, 0.0, 0.0, 1.0, &stats);
+//
+//    std::string buffer(stats);
+//    roboviz->swapBuffers(&buffer);
 }
 ////////////////////////
 

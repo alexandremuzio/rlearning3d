@@ -21,11 +21,6 @@ using api::SetupEnvResponse;
 using api::SimulationResponse;
 using api::State;
 
-struct referenceState {
-    double timeStep;
-    representations::NaoJoints refJoints;
-};
-
 
 class ZMPKickLearningAgent : public BaseLearningAgent {
 public:
@@ -61,6 +56,8 @@ private:
     double currReward;
     double currState;
     double episodeAvgReward;
+    double finalGoalReward;
+    bool randomInitialization;
 
     std::ifstream learningFile;
     control::ControlStub controlStub;
@@ -72,6 +69,7 @@ private:
     std::vector<representations::NaoJoints> referenceMovement;
     int iterator;
     std::ofstream rewardFile;
+    std::ofstream finalPosFile;
     modeling::BodyModel selfBodyModel;
     modeling::BodyModel referenceBodyModel;
 

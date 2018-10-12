@@ -22,34 +22,34 @@ const double SERVER_STEP_TIME = 1 / 60.0;
 ////////////////////////
 // Helper utils methods
 static void drawEnvironment(utils::roboviz::Roboviz& roboviz) {
-    std::string selfStr("pos.field");
-//    roboviz.drawLine(-MAX_FIELD_X, -MAX_FIELD_Y, 0, -MAX_FIELD_X, MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
-    roboviz.drawLine(-0.2, 0.0, 0, -0.2, 5.0, 0, 5, 1, 1, 0, &selfStr);
-//    roboviz.drawLine(-MAX_FIELD_X, -MAX_FIELD_Y, 0, MAX_FIELD_X, -MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
-    roboviz.drawLine(0.2, 0.0, 0, 0.2, 5.0,0, 5, 1, 1, 0, &selfStr);
-
-    std::string buffer("pos.field");
-    roboviz.swapBuffers(&buffer);
+//    std::string selfStr("pos.field");
+////    roboviz.drawLine(-MAX_FIELD_X, -MAX_FIELD_Y, 0, -MAX_FIELD_X, MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
+//    roboviz.drawLine(-0.2, 0.0, 0, -0.2, 5.0, 0, 5, 1, 1, 0, &selfStr);
+////    roboviz.drawLine(-MAX_FIELD_X, -MAX_FIELD_Y, 0, MAX_FIELD_X, -MAX_FIELD_Y, 0, 5, 1, 1, 0, &selfStr);
+//    roboviz.drawLine(0.2, 0.0, 0, 0.2, 5.0,0, 5, 1, 1, 0, &selfStr);
+//
+//    std::string buffer("pos.field");
+//    roboviz.swapBuffers(&buffer);
 }
 
 ////////////////////////
 void RunningLearningAgent::drawStats() {
-    string stats = "stats." + to_string(agentNumber);
-    string rewardString = "Reward: " + to_string(reward());
-    string refXSpeedString = "Ref X Speed: " + to_string(referenceXSpeed);
-    string actionXSpeedString = "Action X Speed: " + to_string(actionXSpeed);
-    string currXSpeedString = "Curr X Speed: " + to_string(currentXSpeed);
-    string currPosition1 = "Curr Position: (" + to_string(getAgentPos().x) + ", " + to_string(getAgentPos().y) + ", " + to_string(
-            getAgentPos().z) + ")";
-
-    roboviz->drawAnnotation(&rewardString, 3*(agentNumber- 1), MAX_FIELD_Y - 0.3, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&refXSpeedString, 3*(agentNumber- 1), MAX_FIELD_Y - 0.6, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&actionXSpeedString, 3*(agentNumber- 1), MAX_FIELD_Y - 0.9, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&currXSpeedString, 3*(agentNumber- 1), MAX_FIELD_Y - 1.2, 0.0, 0.0, 0.0, 1.0, &stats);
-    roboviz->drawAnnotation(&currPosition1, 3*(agentNumber- 1), MAX_FIELD_Y - 1.5, 0.0, 0.0, 0.0, 1.0, &stats);
-
-    std::string buffer(stats);
-    roboviz->swapBuffers(&buffer);
+//    string stats = "stats." + to_string(agentNumber);
+//    string rewardString = "Reward: " + to_string(reward());
+//    string refXSpeedString = "Ref X Speed: " + to_string(referenceXSpeed);
+//    string actionXSpeedString = "Action X Speed: " + to_string(actionXSpeed);
+//    string currXSpeedString = "Curr X Speed: " + to_string(currentXSpeed);
+//    string currPosition1 = "Curr Position: (" + to_string(getAgentPos().x) + ", " + to_string(getAgentPos().y) + ", " + to_string(
+//            getAgentPos().z) + ")";
+//
+//    roboviz->drawAnnotation(&rewardString, 3*(agentNumber- 1), MAX_FIELD_Y - 0.3, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&refXSpeedString, 3*(agentNumber- 1), MAX_FIELD_Y - 0.6, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&actionXSpeedString, 3*(agentNumber- 1), MAX_FIELD_Y - 0.9, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&currXSpeedString, 3*(agentNumber- 1), MAX_FIELD_Y - 1.2, 0.0, 0.0, 0.0, 1.0, &stats);
+//    roboviz->drawAnnotation(&currPosition1, 3*(agentNumber- 1), MAX_FIELD_Y - 1.5, 0.0, 0.0, 0.0, 1.0, &stats);
+//
+//    std::string buffer(stats);
+//    roboviz->swapBuffers(&buffer);
 }
 ////////////////////////
 

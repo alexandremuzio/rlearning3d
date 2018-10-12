@@ -15,7 +15,7 @@ BaseLearningAgent::BaseLearningAgent(std::string host, int serverPort, int monit
         modeling(agentNumber, teamName), agentNumber(agentNumber),
         serverPort(serverPort), monitorPort(monitorPort) {
 
-    roboviz = utils::roboviz::Roboviz::getInstance();
+    //roboviz = utils::roboviz::Roboviz::getInstance();
     auto root = utils::configure_tree::ParameterTreeCreator::getRoot<>();
     RepresentationsLoader representationsLoader;
     representationsLoader.setParameter(root->getChild("representations"));
