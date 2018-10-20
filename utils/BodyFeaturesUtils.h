@@ -23,7 +23,7 @@ public:
 
     representations::NaoJoints readJointsFromFile(std::ifstream &anglesFile);
 
-    representations::NaoJoints readAction(Action action);
+    void readAction(Action action, representations::NaoJoints &actionFrame);
 
     void printJoints(representations::NaoJoints &frame);
 
@@ -34,6 +34,8 @@ public:
     void printJoints(representations::NaoJoints &frame1, representations::NaoJoints &fram2);
 
     std::vector<representations::NaoJoints> preProcessFile(std::ifstream &anglesFile);
+
+    bool simplifyPolicy;
 
 private:
     representations::NaoJoints jointsWeight;

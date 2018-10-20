@@ -23,13 +23,14 @@ const double FINAL_GOAL_WEIGHT = 70;
 // Ball
 const double X_INIT_POSITION = 0.17;
 const double Y_INIT_POSITION = -0.06;
-const double X_TARGET_POSITION = 1.1;
+const double X_TARGET_POSITION = 1.2;
 const double Y_TARGET_POSITION = -0.1;
 
 
 // RL
 const int NUMBER_OF_STATE_DIM = 1;
 const int NUMBER_OF_ACTION_DIM = representations::NaoJoints::NUM_JOINTS;
+const int NUMBER_OF_ACTION_DIM_SIMPLE = 6;
 const int NUMBER_OF_STEPS_PER_EPISODE = 5000 * LearningConstants::NUM_STEP_SAME_INPUT;
 
 ZMPKickLearningAgent::ZMPKickLearningAgent(std::string host, int serverPort, int monitorPort, int agentNumber,
@@ -95,8 +96,13 @@ State ZMPKickLearningAgent::newEpisode() {
 }
 
 SimulationResponse ZMPKickLearningAgent::runStep(Action action) {
+    //execute base movement for other joints
+    if(bodyUtils.simplifyPolicy){
+        kick.update(0.02,commandedJointsPos);
+        commandedJointsPos *= representations::NaoJoints::getNaoDirectionsFixing();
+    }
     // read commanded joints positions
-    commandedJointsPos = bodyUtils.readAction(action);
+    bodyUtils.readAction(action, commandedJointsPos);
     // make 1 simulation step
     step();
     // update feature extractor
@@ -121,7 +127,10 @@ SetupEnvResponse ZMPKickLearningAgent::setup() {
     SetupEnvResponse initialInformation;
 
     initialInformation.set_num_state_dim(NUMBER_OF_STATE_DIM);
-    initialInformation.set_num_action_dim(NUMBER_OF_ACTION_DIM);
+    if(bodyUtils.simplifyPolicy)
+        initialInformation.set_num_action_dim(NUMBER_OF_ACTION_DIM_SIMPLE);
+    else
+        initialInformation.set_num_action_dim(NUMBER_OF_ACTION_DIM);
 
     // Limits for actions
     // angle for each joint
@@ -166,7 +175,8 @@ double ZMPKickLearningAgent::reward() {
     // get actual frame
     representations::NaoJoints actualFrame = perception.getAgentPerception().getNaoJoints();
     // print joints pos for logs
-    bodyUtils.printJoints(referenceFrame,actualFrame);
+    if(iEpi % 10 == 0)
+        bodyUtils.printJoints(referenceFrame,actualFrame);
     // get joints difference norm
     double jointsDiffNorm = bodyUtils.getJointsDiffNorm(actualFrame, referenceFrame);
     // add joints position diff factor in reward
