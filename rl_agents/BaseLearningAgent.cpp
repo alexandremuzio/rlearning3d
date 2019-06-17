@@ -65,9 +65,3 @@ double BaseLearningAgent::getAgentAngle() {
 bool BaseLearningAgent::robotFallen() {
     return currentPos.z < 0.2;
 }
-
-
-
-
-
-

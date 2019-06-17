@@ -82,7 +82,7 @@ protected:
     perception::Perception perception;
     modeling::Modeling modeling;
     representations::HearData hearData;
-    std::shared_ptr<utils::roboviz::Roboviz> roboviz;
+    utils::roboviz::Roboviz* roboviz;
 };
 
 #endif //ITANDROIDS_SOCCER3D_CPP_BASELEARNINGAGENT_H

@@ -13,7 +13,7 @@ set(CONFIG_DIR config)
 # Debugging purposes
 set( CMAKE_VERBOSE_MAKEFILE on )
 
-set(GRPC_LINK  -lprotobuf -lgrpc++ -lgrpc)
+set(GRPC_LINK -lprotobuf -lgrpc++ -lgrpc)
 
 find_package(Protobuf REQUIRED)
 
