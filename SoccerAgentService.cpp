@@ -1,3 +1,5 @@
+#include "KickLearningAgent.h"
+#include "StealBallLearningAgent.h"
 #include "SoccerAgentService.h"
 
 #include "external/easylogging++.h"

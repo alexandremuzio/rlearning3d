@@ -2,6 +2,7 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 import numpy as np
+from mpi4py import MPI
 
 import grpc
 import logging
@@ -17,7 +18,7 @@ class SoccerEnv(gym.Env, utils.EzPickle):
         # Start connection with server
         if eval:
             id += 10
-        self.channel = grpc.insecure_channel('localhost:' + str(5000 + id))
+        self.channel = grpc.insecure_channel(MPI.Get_processor_name() + ':' + str(5000 + id))
         self.stub = soccer3d_pb2_grpc.DDPGTrainerStub(self.channel)
 
         setup = self.stub.SetupEnvironment(soccer3d_pb2.SetupEnvRequest())

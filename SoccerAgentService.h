@@ -2,9 +2,7 @@
 #define ITANDROIDS_SOCCER3D_CPP_SIMPLEAGENTSERVER_H
 
 #include "soccer3d.grpc.pb.h"
-#include "RacerLearningAgent.h"
-#include "RunningLearningAgent.h"
-#include "StealBallLearningAgent.h"
+#include "BaseLearningAgent.h"
 
 #include <grpc++/grpc++.h>
 #include <map>

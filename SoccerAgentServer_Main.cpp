@@ -1,15 +1,15 @@
 #include "SoccerAgentService.h"
 
 #include "external/easylogging++.h"
-#include "utils/command_line_parser/AgentCommandLineParser.h"
+#include "core/utils/command_line_parser/AgentCommandLineParser.h"
 
-using utils::command_line_parser::AgentCommandLineParser;
-
+using core::utils::command_line_parser::AgentCommandLineParser;
+using std::string;
 
 INITIALIZE_EASYLOGGINGPP
 
 void RunServer(string serverIp, int serverPort, int monitorPort, string teamName) {
-    string serverAddress("0.0.0.0:" + to_string(5000+ serverPort%100));
+    string serverAddress("0.0.0.0:" + std::to_string(5000));
 
     SoccerAgentService service(serverIp, serverPort, monitorPort, teamName);
     std::promise<void> &closeRequested = service.getClosePromise();
