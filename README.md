@@ -8,16 +8,53 @@ There are two components:
 
 #### Client (Python - training algorithms)
 
-<!-- TODO: Update this with rlearning3d repo -->
-- Download [ddpg-humanoid](https://github.com/alexandremuzio/ddpg-humanoid) repo. This repository creates the interface between the algorithms and the soccer environment. There are several modifications at branch [export-cpp-policy](https://github.com/alexandremuzio/ddpg-humanoid/tree/export-cpp-policy) that are useful and therefore is recommended to use.
-- Update algorithms submodule [baselines](https://github.com/alexandremuzio/baselines). There is a branch called `kick-policy` for kick optimization tasks.
+- Update algorithms submodule [baselines](https://github.com/alexandremuzio/baselines). The master branch should be up to date. If this is the first time, run:
+
+```bash
+git submodule update --init
+```
+
 - Follow repo installation in the README. Recommend installing it a virtual environment (conda). This will install tensorflow, etc...
 
-OBS: As future work, it is recommended to remove the dependency from `ddpg-humanoid` repository refactor the `soccer_env` interface to integrate with other RL repositories, such as [rllab](https://github.com/rll/rllab) and [spinning-up-rl](https://github.com/openai/spinningup).
+OBS: As future work, it's a good idea to refactor `soccer_env` interface to integrate with other RL repositories, such as [rllab](https://github.com/rll/rllab) and [spinning-up-rl](https://github.com/openai/spinningup).
 It is also important to update baselines submodule instead of using this obsolete version.
 
+
+#### Server (C++)
+
+- Since the server uses the ITAndroids source code, you must first install all dependencies from the ITAndroids source code.
+For installation information, check _itandroids-soccer3d/documentation/_ and follow the guides:
+* _GuiaBasico_ITAndroids3d.pdf_
+* _IntegrandoTensorFlow.md_
+
+#### (Optional) Setup - Cluster
+
+-    Firstly, create an account in colfax cluster (Intel DevCloud) and follow the steps to learn how to connect via `ssh`.
+-    Then, copy the content from [this folder](https://drive.google.com/open?id=1UxrgbbNXS-GrkMwqghcN7PFCDtGl0Sj7) to your account home. 
+-    Follow the Setup documentation to pull repositories and create the conda environment. IMPORTANT: The conda environment is located in `~/.conda/envs/rlearning-3d`(if you need to change any hyperparameter in the algorithm, you need to change inside the folder `lib/python3.5/site-packages/baselines`)
+-    Copy `distributed_devcloud` folder with all scripts at HOME directory.
+
+## Building
+
+#### Server - Local
+-  `mkdir build && cd build && cmake .. && make -j 4 SoccerAgentServer_Main`
+-   After build, you just need to run as detailed earlier.
+
+#### Server - Cluster
+
+The difference is that we need to ensure a completely static binary to avoid undefined references within the cluster environment.
+
+- Use the `rl-server-cluster`branch that has no dependency of `libtensorflow_cc`
+- `mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j 4 SoccerAgentServer_Main`
+-  Then, just copy to the right folder inside DevCloud using `scp` command.
+-  Cluster folder structure (this structure ensures the scripts for running distributed works correctly): 
+    - ddpg-humanoid
+    - distributed-devcloud
+    - soccer3d
+        - binaries --- SoccerAgentServer_Main     
+
 ## Running
- 
+
 #### Server (C++)
 - The most stable version from the RL server is on branch `rl-server` and `rl-server-cluster`. The first one has the purpose of running in a local configuration. The second one, on the other side, is intended to run on Intel DevCloud.
     - OBS: We need to use two branches because of `libtensorflow_cc`. Is it a dynamic lib so we can't link statically to a binary that need to be deployed in the cluster. This is other problem to be solved. Until now, there is no static version from this lib.
@@ -44,30 +81,6 @@ python -m baselines.ppo1.run_soccer
 
 You should now see the agent appear on field.
 
-## Build Server - Local
--  `mkdir build && cd build && cmake .. && make -j 4 SoccerAgentServer_Main`
--   After build, you just need to run as detailed earlier.
-
-## Setup - Cluster
-
--    Firstly, create an account in colfax cluster (Intel DevCloud) and follow the steps to learn how to connect via `ssh`.
--    Then, copy the content from [this folder](https://drive.google.com/open?id=1UxrgbbNXS-GrkMwqghcN7PFCDtGl0Sj7) to your account home. 
--    Follow the Setup documentation to pull repositories and create the conda environment. IMPORTANT: The conda environment is located in `~/.conda/envs/rlearning-3d`(if you need to change any hyperparameter in the algorithm, you need to change inside the folder `lib/python3.5/site-packages/baselines`)
--    Copy `distributed_devcloud` folder with all scripts at HOME directory.
-
-## Build and Deploy Server - Cluster
-
-The difference is that we need to ensure a completely static binary to avoid undefined references within the cluster environment.
-
-- Use the `rl-server-cluster`branch that has no dependency of `libtensorflow_cc`
-- `mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j 4 SoccerAgentServer_Main`
--  Then, just copy to the right folder inside DevCloud using `scp` command.
--  Cluster folder structure (this structure ensures the scripts for running distributed works correctly): 
-    - ddpg-humanoid
-    - distributed-devcloud
-    - soccer3d
-        - binaries --- SoccerAgentServer_Main     
-    
 
 ## Running Distributed
 -    Inside the cluster environment, you have the following scripts to run distributed:
@@ -95,8 +108,6 @@ The difference is that we need to ensure a completely static binary to avoid und
 ## Tensorboard
 - To debug training metrics, use the tensorboard.
 - `tensorboard --logdir=<LOG_DIR> --port=<PORT>`, where LOG_DIR is the log directory generated by the training procedure.
-
-
 
 
 ## Additional information

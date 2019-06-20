@@ -14,6 +14,18 @@ add_subdirectory(${SIM_INTERFACE_DIR}/agents)
 # Debugging purposes
 set( CMAKE_VERBOSE_MAKEFILE on )
 
+if(CLUSTER)
+    message("CONFIGURING FOR CLUSTER...")
+    set(CMAKE_EXE_LINKER_FLAGS -static)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+    set(CMAKE_EXE_LINK_DYNAMIC_C_FLAGS)     # remove -Wl,-Bdynamic
+    set(CMAKE_EXE_LINK_DYNAMIC_CXX_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_C_FLAGS)       # remove -fPIC
+    set(CMAKE_SHARED_LIBRARY_CXX_FLAGS)
+    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)  # remove -rdynamic
+    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
+endif(CLUSTER)
+
 set(GRPC_LINK -lprotobuf -lgrpc++ -lgrpc)
 
 find_package(Protobuf REQUIRED)
@@ -29,21 +41,8 @@ file(GLOB RL_SRCS ${RL_AGENTS_DIR}/*.cpp)
 file(GLOB EXTERNAL_SRCS ${EXTERNAL_DIR}/*.cc ${EXTERNAL_DIR}/*.cpp)
 file(GLOB CODEGEN_SRCS ${CODEGEN_DIR}/*.cc ${CODEGEN_DIR}/*.cpp)
 
-
-message(WARNING ${RL_SRCS})
 add_executable(SoccerAgentServer_Main ${LEARNING_SRCS} ${RL_SRCS} ${EXTERNAL_SRCS} ${CODEGEN_SRCS})
 target_link_libraries(SoccerAgentServer_Main itandroids-lib-library test_source core ${GRPC_LINK})
-
-
-# Add .txts files to binaries/
-#file(GLOB AGENT_TXTS "*.conf" "*.txt" "config/*.json")
-#foreach (agent_txt ${AGENT_TXTS})
-#    add_custom_command(TARGET SoccerAgentServer_Main
-#            PRE_BUILD
-#            COMMAND ${CMAKE_COMMAND} -E copy
-#            ${agent_txt} $<TARGET_FILE_DIR:SoccerAgentServer_Main>/config)
-#    #message(WARNING ${agent_txt})
-#endforeach ()
 
 # Add starting script to binaries/
 add_custom_command(TARGET SoccerAgentServer_Main
@@ -57,3 +56,13 @@ add_custom_command(TARGET SoccerAgentServer_Main
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/${CONFIG_DIR}
         $<TARGET_FILE_DIR:SoccerAgentServer_Main>/${CONFIG_DIR})
+
+# Add .txts files to binaries/
+#file(GLOB AGENT_TXTS "*.conf" "*.txt" "config/*.json")
+#foreach (agent_txt ${AGENT_TXTS})
+#    add_custom_command(TARGET SoccerAgentServer_Main
+#            PRE_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E copy
+#            ${agent_txt} $<TARGET_FILE_DIR:SoccerAgentServer_Main>/config)
+#    #message(WARNING ${agent_txt})
+#endforeach ()
