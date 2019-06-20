@@ -1,14 +1,15 @@
-add_subdirectory(agents)
-
 cmake_minimum_required(VERSION 3.0)
 project(learning)
 
-set(LIB_DIR ../../../../itandroids-lib/source)
-set(SOURCE_DIR ../../../source)
-set(RL_AGENTS_DIR rl_agents)
-set(EXTERNAL_DIR external)
-set(CODEGEN_DIR codegen)
-set(CONFIG_DIR config)
+set(ITANDROIDS_LIB_DIR ../../../../itandroids-lib/source)
+set(ITANDROIDS_SOURCE_DIR ../../../source)
+set(SIM_INTERFACE_DIR simulator_interface)
+set(RL_AGENTS_DIR ${SIM_INTERFACE_DIR}/rl_agents)
+set(EXTERNAL_DIR ${SIM_INTERFACE_DIR}/external)
+set(CODEGEN_DIR ${SIM_INTERFACE_DIR}/codegen)
+set(CONFIG_DIR ${SIM_INTERFACE_DIR}/config)
+
+add_subdirectory(${SIM_INTERFACE_DIR}/agents)
 
 # Debugging purposes
 set( CMAKE_VERBOSE_MAKEFILE on )
@@ -17,19 +18,19 @@ set(GRPC_LINK -lprotobuf -lgrpc++ -lgrpc)
 
 find_package(Protobuf REQUIRED)
 
-include_directories(${SOURCE_DIR})
-include_directories(.)
-#include_directories(${EXTERNAL_DIR})
+include_directories(${ITANDROIDS_SOURCE_DIR})
+include_directories(${SIM_INTERFACE_DIR})
+include_directories(${EXTERNAL_DIR})
 include_directories(${RL_AGENTS_DIR})
 include_directories(${CODEGEN_DIR})
 
-file(GLOB LEARNING_SRCS "*.cpp" "*.cc")
+file(GLOB LEARNING_SRCS ${SIM_INTERFACE_DIR}/*.cpp ${SIM_INTERFACE_DIR}/*.cc)
 file(GLOB RL_SRCS ${RL_AGENTS_DIR}/*.cpp)
 file(GLOB EXTERNAL_SRCS ${EXTERNAL_DIR}/*.cc ${EXTERNAL_DIR}/*.cpp)
 file(GLOB CODEGEN_SRCS ${CODEGEN_DIR}/*.cc ${CODEGEN_DIR}/*.cpp)
 
 
-#message(WARNING ${CODEGEN_SRCS})
+message(WARNING ${RL_SRCS})
 add_executable(SoccerAgentServer_Main ${LEARNING_SRCS} ${RL_SRCS} ${EXTERNAL_SRCS} ${CODEGEN_SRCS})
 target_link_libraries(SoccerAgentServer_Main itandroids-lib-library test_source core ${GRPC_LINK})
 
