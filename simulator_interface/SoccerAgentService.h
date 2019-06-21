@@ -26,7 +26,7 @@ using api::CloseResponse;
 class SoccerAgentService final : public DDPGTrainer::Service {
 public:
     SoccerAgentService() { }
-    SoccerAgentService(string serverIp, int serverPort, int monitorPort, string teamName);
+    SoccerAgentService(string serverIp, int serverPort, int monitorPort, string teamName, string agentType);
 
     Status SetupEnvironment(ServerContext* context, const SetupEnvRequest* request, SetupEnvResponse* response) override;
     Status Simulate(ServerContext* context, const SimulationRequest* request, SimulationResponse* response) override;
@@ -42,6 +42,7 @@ private:
     int serverPort = 3100;
     int monitorPort = 3200;
     string teamName = "ITAndroids";
+    string agentType = "steal";
 
     int nbAgents = 1;
 
