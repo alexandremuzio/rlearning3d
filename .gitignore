@@ -1,4 +1,4 @@
-codegen/*
+simulator_interface/codegen/*
 
 *.ipch
 *.bin

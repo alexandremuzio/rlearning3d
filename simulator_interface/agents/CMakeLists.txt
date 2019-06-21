@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(learning)
 
-set(LIB_DIR ../../../../../itandroids-lib/source)
-set(SOURCE_DIR ../../../../source)
+set(LIB_DIR ../../../../../../itandroids-lib/source)
+set(SOURCE_DIR ../../../../../source)
 
 
 include_directories(${SOURCE_DIR})

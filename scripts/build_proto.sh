@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CODEGEN_DIR=../codegen
+CODEGEN_DIR=../simulator_interface/codegen
 PROTO_DIR=../api
 
 mkdir ../codegen &> /dev/null
