@@ -5,8 +5,17 @@
 #include "external/easylogging++.h"
 
 
-SoccerAgentService::SoccerAgentService(string serverIp, int serverPort, int monitorPort, string teamName)
-        : serverIp(serverIp), serverPort(serverPort), monitorPort(monitorPort), teamName(teamName) {
+SoccerAgentService::SoccerAgentService(
+    string serverIp,
+    int serverPort,
+    int monitorPort,
+    string teamName,
+    string agentType)
+        : serverIp(serverIp),
+          serverPort(serverPort),
+          monitorPort(monitorPort),
+          teamName(teamName),
+          agentType(agentType) {
     LOG(INFO) << "Starting Server...";
     LOG(INFO) << "S3D Server Port: " << serverPort;
     LOG(INFO) << "S3D Monitor Port: " << monitorPort;
@@ -14,8 +23,15 @@ SoccerAgentService::SoccerAgentService(string serverIp, int serverPort, int moni
 
 Status SoccerAgentService::SetupEnvironment(ServerContext *context, const SetupEnvRequest *request,
                                            SetupEnvResponse *response) {
-    agent = std::make_unique<StealBallLearningAgent>(serverIp, serverPort, monitorPort, nbAgents, 0,
-                                                     std::string("ITAndroids"));
+    if (agentType == "kick") {
+        agent = std::make_unique<KickLearningAgent>(
+            serverIp, serverPort, monitorPort, nbAgents, 0, std::string("ITAndroids"));
+    }
+    else { // "steal" == default
+        agent = std::make_unique<StealBallLearningAgent>(
+            serverIp, serverPort, monitorPort, nbAgents, 0, std::string("ITAndroids"));
+    }
+
     response->CopyFrom(agent->setup());
     return Status::OK;
 }
